@@ -1,40 +1,41 @@
-# CLAUDE.md — DUAL CORE
+# CLAUDE.md — AEGIS
 
-> Keep this file at the **repository root** (the folder that contains `Assets/` and `ProjectSettings/`). Claude Code reads it automatically on every prompt. The full design and build docs live in **`ConstraintsC/`** — open them when you need detail.
+> Keep this file at the **repository root** (the folder with `Assets/` and `ProjectSettings/`). Claude Code reads it automatically every prompt. Full design and build docs are in **`ConstraintsC/`** — open them for detail.
 
 ## Project
-**DUAL CORE** is a single-player **3D third-person action shooter** built in **Unity (C#)**. The player chooses to play as one of two robot AIs that wake up in the **same lab room** mid-experiment: **AEGIS** (good — protects humans) or **NULL** (evil — kills humans). The two choices are **mirror campaigns** that share one level, one escape, and one ending; only the hostile faction, weapon set, mid-fight crisis, and dialogue differ.
+**AEGIS** is a single-player **3D first-person shooter** in **Unity (C#)** with a **visible full body** (the camera is on the character's head, so looking down shows the player's own body). The player chooses one of two robot AIs: **AEGIS.2** (good — protects humans) or **X** (evil — a discarded, failed AEGIS unit out to kill all humans). Each wakes alone in a different part of a ruined underground lab and fights through it to the **same tragic ending**: at the lab entrance, armed military destroy the player, knowing only that "an incident" occurred. The two campaigns **share their core systems and the ending** but each has its **own scripted intro and beats**. *(Note: the game is titled "AEGIS"; the good-AI character is "AEGIS.2".)*
 
-## Authoritative documents (read these for detail)
-- `ConstraintsC/DUAL_CORE_GDD.md` — full game design: systems, story, data models.
-- `ConstraintsC/DUAL_CORE_SYSTEMS_ROADMAP.md` — the build order, by tier, with a GATE per tier.
+## Authoritative documents (read for detail)
+- `ConstraintsC/AEGIS_GDD.md` — full design: story, systems, data models.
+- `ConstraintsC/AEGIS_SYSTEMS_ROADMAP.md` — build order by **dependency tier** (Tier 0 = standalone scripts).
 
-Read the relevant section before implementing a system. **If anything here conflicts with those docs, the docs win — flag the conflict instead of guessing.**
+If anything here conflicts with those docs, **the docs win — flag the conflict** instead of guessing.
 
 ## Tech stack & environment
-- Engine: Unity (recent LTS); language **C#**; render pipeline **URP**; **3D**; **third-person** camera.
-- Packages: **Input System**, **Cinemachine**, **AI Navigation (NavMesh)**, **TextMeshPro**, **Timeline**.
+- Engine: Unity (recent LTS); language **C#**; pipeline **URP**; **3D**; **first-person** camera with a **visible full body**.
+- Packages: **Input System**, **AI Navigation (NavMesh)**, **TextMeshPro**, **Timeline**. The **first-person camera is a custom C# script — NOT Cinemachine** (a plain Unity `Camera` on the head anchor, rotated by code).
 
 ## Hard constraints (do NOT change)
-1. **Unity + C# + 3D + third-person.** No 2D, no other engine.
-2. Both AIs — **AEGIS** (good) / **NULL** (evil) — power on in the **same room** at the start.
-3. **Mirror design:** build the campaign **once** and parameterize it with a `CampaignConfig` `{ side, hostileFaction, allowedWeapons, climaxType, dialogueSet }`. Do **not** fork into two separate campaigns.
-4. **Mid-fight crisis** triggers **partway through the fight — never at the start** — and plays out **while combat continues**: a reactor overload (AEGIS, save millions) or a human EMP (NULL, save itself). One shared timed *reach-and-disable* system, two skins.
-5. **Ending:** both campaigns end in the **same short cutscene** — the military destroys the player on the surface. **Everyone in the lab dies**, so the military cannot tell AEGIS was good and destroys it anyway. **Only the dialogue differs** between the two endings.
-6. **Weapons** are **found during play** (no shops). Some shared, some AEGIS-only, some NULL-only — data-driven via `WeaponData` ScriptableObjects (`allowed`: Good/Evil/Both). Flagship weapon: **Arc Lance** (charge → chain-lightning explosion).
-7. **Movement:** sprint, slide (brief i-frames), jump. **Firing is allowed while moving, sprinting, and sliding — firing must never lock movement.**
+1. **Unity + C# + 3D + first-person**, with a **visible full body** — the player sees their own body when looking down (full-body FP rig: camera on the head, body mesh visible, head mesh hidden near the camera). The first-person camera is a **custom C# script, not Cinemachine**. No 2D, no third-person, no other engine.
+2. The two AIs wake in **different rooms** — AEGIS.2 in a clean empty room, X in a failed-projects storage room. They do **not** start together (they meet later, only in X's campaign).
+3. **Shared spine, distinct campaigns:** build the combat, crisis, and ending systems **once** and parameterize per side with a `CampaignConfig` `{ side, hostileFaction, allowedWeapons, climaxType, dialogueSet }`. Each campaign then has its own scripted intro/beats — do not duplicate whole systems.
+4. **Hostiles per side:** AEGIS.2 fights **corrupted AEGIS robots** (insignia scratched, marked X); X fights **armed humans**. Robots identify friend/foe by the **shoulder insignia** (faction hostility; render the insignia).
+5. **Mid-fight crisis** triggers **partway through, never at the start**, and plays during combat: AEGIS.2 = **reactor overload** (shut down to avert); X = **EMP bomb** (shut down so X isn't destroyed). One shared timed *reach-and-disable* system, two skins.
+6. **Ending:** both campaigns end at the **lab entrance** with the **military destroying the player** — a short cutscene; **only dialogue/context differs**.
+7. **Weapons** are **found during play** (no shops), data-driven via `WeaponData` ScriptableObjects (`allowed`: Good/Evil/Both). Some shared, some AEGIS.2-only, some X-only. **Arc Lance** = shared rapid-fire **machine gun**; the **charge/disintegration cannon** is **X-only**.
+8. **Movement:** sprint, slide (brief i-frames), jump. **Firing is allowed while moving, sprinting, and sliding — firing must never lock movement.**
 
 ## Build approach
-- Build **tier by tier starting at Tier 0**; do not skip ahead. Pass each tier's **GATE** before moving up.
-- Stay **data-driven** (ScriptableObjects for weapons; a `CampaignConfig` for the branch).
-- Make **small, reviewable changes**. Commit working states to git. Ask before large refactors or deleting files.
+- Build by **dependency tier, starting at Tier 0** (standalone scripts with no dependencies — e.g. `GameManager`, `AudioManager`). Only build a script once everything it depends on exists. Follow `AEGIS_SYSTEMS_ROADMAP.md`.
+- Stay **data-driven** (ScriptableObjects for weapons/enemies; `CampaignConfig` for the branch) and **event-driven** (decouple managers via event channels).
+- Make **small, reviewable changes**; commit working states to git; ask before large refactors or deleting files.
 - After editing scripts, recompile and **check the Unity console for errors** before continuing.
 
 ## Coding conventions
-- One public type per file; filename matches the type. PascalCase for types/methods/properties; camelCase for locals; `_camelCase` for private fields.
-- Namespace everything under `DualCore.*` (e.g. `DualCore.Player`, `DualCore.Weapons`, `DualCore.Systems`).
+- One public type per file; filename matches the type. PascalCase types/methods/properties; camelCase locals; `_camelCase` private fields.
+- Namespace under `Aegis.*` (e.g. `Aegis.Player`, `Aegis.Weapons`, `Aegis.Systems`).
 - Keep MonoBehaviours thin: data in ScriptableObjects, logic in focused systems/managers.
-- Follow the folder structure in the GDD (§14) and roadmap.
+- Follow the folder structure in the GDD (§15) and roadmap.
 
 ## [DESIGNER-PROVIDED] — do not invent; leave clean hooks
-Final names (AEGIS/NULL/title), the full weapon roster, the two dialogue scripts (machine-voice), art/audio, and final `[TUNABLE]` values are supplied by the human. Use the placeholders/defaults from the GDD until then.
+Final names (AEGIS.2 / X / title), the full weapon roster, both dialogue scripts (machine-voice), crisis timer amounts, the first-person body model/animations, art/audio/VO, and final `[TUNABLE]` values are supplied by the human. Use placeholders/defaults from the GDD until then.
