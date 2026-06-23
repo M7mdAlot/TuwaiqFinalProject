@@ -9,10 +9,12 @@ namespace Aegis.Weapons
     /// bullet flies forward and damages the first thing it collides with — so the hit lands
     /// when the bullet actually reaches the target (no hitscan).
     ///
-    /// A Rigidbody is required for collision callbacks and is added/configured automatically
+    /// A Rigidbody is required for trigger callbacks and is added/configured automatically
     /// (gravity off, continuous collision so fast bullets don't pass through thin objects).
-    /// Works whether the Sphere Collider is a normal collider (OnCollisionEnter) or a
-    /// trigger (OnTriggerEnter). Targets just need a Collider + a HealthSystem (IDamageable).
+    /// The bullet uses TRIGGER detection only (OnTriggerEnter) — it never physically pushes
+    /// anything, so enemies don't get shoved when shot. Any Sphere Colliders on this object
+    /// are forced to Is Trigger = true on Awake to make this foolproof.
+    /// Targets just need a Collider + a HealthSystem (IDamageable).
     /// Tier 1 — depends only on Tier 0 (IDamageable, ObjectPool).
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
@@ -34,6 +36,10 @@ namespace Aegis.Weapons
             _rb.useGravity = false;
             _rb.isKinematic = false;
             _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // anti-tunneling
+
+            // Force every collider on this bullet to be a trigger so it can never push things.
+            foreach (Collider col in GetComponents<Collider>())
+                col.isTrigger = true;
         }
 
         private void OnEnable()
@@ -60,13 +66,7 @@ namespace Aegis.Weapons
             if (_timeLeft <= 0f) Despawn(transform.position);
         }
 
-        // Fires when the collider is NOT a trigger.
-        private void OnCollisionEnter(Collision collision)
-        {
-            HandleHit(collision.collider, collision.GetContact(0).point);
-        }
-
-        // Fires when the collider IS a trigger.
+        // Trigger-only: bullets detect contact but never push anything.
         private void OnTriggerEnter(Collider other)
         {
             HandleHit(other, transform.position);
