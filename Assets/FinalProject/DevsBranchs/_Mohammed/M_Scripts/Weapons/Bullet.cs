@@ -24,6 +24,8 @@ namespace Aegis.Weapons
         [SerializeField] private float _damage = 10f;
         [SerializeField] private float _lifetime = 5f;       // despawn if it hits nothing
         [SerializeField] private GameObject _hitVFX;         // optional impact effect
+        [Tooltip("Seconds before the spawned hit VFX is force-destroyed. Use -1 to leave cleanup entirely to the VFX prefab itself.")]
+        [SerializeField] private float _hitVFXLifetime = 2f;
 
         private Rigidbody _rb;
         private ObjectPool<Bullet> _pool;
@@ -60,6 +62,24 @@ namespace Aegis.Weapons
             _rb.linearVelocity = transform.forward * _speed;
         }
 
+        /// <summary>
+        /// Tell the physics engine that every collider on <paramref name="shooter"/> (and its
+        /// children) should be ignored by this bullet. Use this so a player aiming straight
+        /// down doesn't shoot themselves, and an enemy doesn't shoot itself either.
+        /// </summary>
+        public void IgnoreShooter(GameObject shooter)
+        {
+            if (shooter == null) return;
+
+            Collider[] ownColliders = GetComponentsInChildren<Collider>(includeInactive: true);
+            Collider[] shooterColliders = shooter.GetComponentsInChildren<Collider>(includeInactive: true);
+
+            foreach (Collider mine in ownColliders)
+            foreach (Collider theirs in shooterColliders)
+                if (mine != null && theirs != null)
+                    Physics.IgnoreCollision(mine, theirs, true);
+        }
+
         private void Update()
         {
             _timeLeft -= Time.deltaTime;
@@ -85,7 +105,12 @@ namespace Aegis.Weapons
 
         private void Despawn(Vector3 point)
         {
-            if (_hitVFX != null) Instantiate(_hitVFX, point, Quaternion.identity);
+            if (_hitVFX != null)
+            {
+                GameObject vfx = Instantiate(_hitVFX, point, Quaternion.identity);
+                if (_hitVFXLifetime >= 0f) Destroy(vfx, _hitVFXLifetime);
+                // (If the VFX prefab has its own Stop Action: Destroy, whichever fires first wins.)
+            }
 
             _rb.linearVelocity = Vector3.zero;
 

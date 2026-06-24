@@ -39,6 +39,8 @@ namespace Aegis.Input
         /// <summary>Weapon cycle direction: positive = next, negative = previous.</summary>
         public event Action<float> SwitchWeaponEvent;
 
+        public event Action ReloadEvent;
+
         private const string GameplayMapName = "Gameplay";
 
         private InputAction _move;
@@ -49,6 +51,7 @@ namespace Aegis.Input
         private InputAction _fire;
         private InputAction _interact;
         private InputAction _switchWeapon;
+        private InputAction _reload;
 
         private void OnEnable()
         {
@@ -67,6 +70,7 @@ namespace Aegis.Input
             _fire = map.FindAction("Fire", throwIfNotFound: true);
             _interact = map.FindAction("Interact", throwIfNotFound: true);
             _switchWeapon = map.FindAction("SwitchWeapon", throwIfNotFound: true);
+            _reload = map.FindAction("Reload", throwIfNotFound: true);
 
             _move.performed += OnMove;
             _move.canceled += OnMove;
@@ -82,6 +86,7 @@ namespace Aegis.Input
             _interact.started += OnInteractStarted;
             _interact.canceled += OnInteractCanceled;
             _switchWeapon.performed += OnSwitchWeapon;
+            _reload.performed += OnReload;
 
             EnableGameplay();
         }
@@ -104,6 +109,7 @@ namespace Aegis.Input
             _interact.started -= OnInteractStarted;
             _interact.canceled -= OnInteractCanceled;
             _switchWeapon.performed -= OnSwitchWeapon;
+            _reload.performed -= OnReload;
 
             DisableGameplay();
         }
@@ -147,5 +153,6 @@ namespace Aegis.Input
         }
 
         private void OnSwitchWeapon(InputAction.CallbackContext ctx) => SwitchWeaponEvent?.Invoke(ctx.ReadValue<float>());
+        private void OnReload(InputAction.CallbackContext ctx) => ReloadEvent?.Invoke();
     }
 }

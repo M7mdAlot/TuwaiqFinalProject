@@ -34,5 +34,9 @@ namespace Aegis.Weapons
         public GameObject muzzleVFX;
         public GameObject hitVFX;
         public AudioClip fireSFX;
+
+        [Header("Muzzle (per weapon, in the muzzle anchor's local space)")]
+        [Tooltip("Where this weapon's barrel sticks out, relative to the player's muzzle anchor (e.g. the camera). +X = right, +Y = up, +Z = forward. Different shapes per gun.")]
+        public Vector3 muzzleOffset;
     }
 }

@@ -21,7 +21,7 @@ namespace Aegis.Player
         [SerializeField] private InputReader _inputReader;
 
         [Header("Refs")]
-        [Tooltip("Where bullets spawn (the gun's muzzle, or just the camera forward).")]
+        [Tooltip("Base muzzle ANCHOR (usually the camera). Each WeaponData adds its own muzzleOffset on top of this, so different guns spawn bullets at different barrel positions.")]
         [SerializeField] private Transform _muzzle;
 
         [Header("Loadout")]
@@ -57,6 +57,7 @@ namespace Aegis.Player
             _inputReader.FireStartedEvent += OnFireStarted;
             _inputReader.FireCanceledEvent += OnFireCanceled;
             _inputReader.SwitchWeaponEvent += OnSwitchWeapon;
+            _inputReader.ReloadEvent += Reload;
         }
 
         private void OnDisable()
@@ -65,6 +66,7 @@ namespace Aegis.Player
             _inputReader.FireStartedEvent -= OnFireStarted;
             _inputReader.FireCanceledEvent -= OnFireCanceled;
             _inputReader.SwitchWeaponEvent -= OnSwitchWeapon;
+            _inputReader.ReloadEvent -= Reload;
         }
 
         private void Update()
@@ -113,6 +115,17 @@ namespace Aegis.Player
 
         public void EquipNext() => Cycle(+1);
         public void EquipPrevious() => Cycle(-1);
+
+        /// <summary>Instant reload — refills the current weapon's magazine to its max ammo.</summary>
+        public void Reload()
+        {
+            Weapon w = CurrentWeapon;
+            if (w == null || w.Data.ammo < 0) return;       // -1 ammo means "infinite"
+            if (w.CurrentAmmo >= w.Data.ammo) return;       // already full
+
+            w.Refill();
+            AmmoChanged?.Invoke(w);
+        }
 
         private void Cycle(int direction)
         {
@@ -170,14 +183,22 @@ namespace Aegis.Player
                 return;
             }
 
-            // Spawn the Bullet prefab at the muzzle, aimed forward.
-            GameObject go = Instantiate(w.Data.projectilePrefab, _muzzle.position, _muzzle.rotation);
-            Bullet bullet = go.GetComponent<Bullet>();
-            if (bullet != null) bullet.Launch(w.Data.projectileSpeed, w.Data.damage, null);
+            // Resolve this weapon's barrel position: anchor + per-weapon offset (in the anchor's local space).
+            Vector3 spawnPos = _muzzle.position + _muzzle.TransformVector(w.Data.muzzleOffset);
+            Quaternion spawnRot = _muzzle.rotation;
 
-            // Optional muzzle flash + sound.
+            // Spawn the Bullet prefab at the resolved barrel, aimed forward.
+            GameObject go = Instantiate(w.Data.projectilePrefab, spawnPos, spawnRot);
+            Bullet bullet = go.GetComponent<Bullet>();
+            if (bullet != null)
+            {
+                bullet.IgnoreShooter(gameObject); // don't hit our own player capsule when aiming down
+                bullet.Launch(w.Data.projectileSpeed, w.Data.damage, null);
+            }
+
+            // Optional muzzle flash + sound (also at the resolved barrel).
             if (w.Data.muzzleVFX != null)
-                Instantiate(w.Data.muzzleVFX, _muzzle.position, _muzzle.rotation);
+                Instantiate(w.Data.muzzleVFX, spawnPos, spawnRot);
             if (w.Data.fireSFX != null && AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX(w.Data.fireSFX);
 

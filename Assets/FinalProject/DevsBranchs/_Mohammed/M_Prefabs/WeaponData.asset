@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23966a434e8c63340b145fe2b48a094e, type: 3}
+  m_Name: WeaponData
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Weapons.WeaponData
+  id: Plasma Gun
+  displayName: AegisGun
+  description: 
+  allowed: 2
+  fireMode: 1
+  effect: 0
+  damage: 10
+  splashRadius: 0
+  chargeTime: 0
+  fireRate: 5
+  projectileSpeed: 50
+  ammo: 30
+  projectilePrefab: {fileID: 853484174402684912, guid: c7beda95bc94fa040a68120a9cd040ea, type: 3}
+  muzzleVFX: {fileID: 0}
+  hitVFX: {fileID: 0}
+  fireSFX: {fileID: 0}
+  muzzleOffset: {x: 0, y: 0, z: 0}

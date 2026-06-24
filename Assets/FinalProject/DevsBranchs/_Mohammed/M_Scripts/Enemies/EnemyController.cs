@@ -154,9 +154,16 @@ namespace Aegis.Enemies
             Vector3 dir = ((_target.position + Vector3.up * 1f) - spawn.position).normalized;
             Quaternion rot = Quaternion.LookRotation(dir);
 
-            GameObject go = Instantiate(weapon.projectilePrefab, spawn.position, rot);
+            // Anchor + the WeaponData's per-weapon barrel offset (in the anchor's local space).
+            Vector3 spawnPos = spawn.position + spawn.TransformVector(weapon.muzzleOffset);
+
+            GameObject go = Instantiate(weapon.projectilePrefab, spawnPos, rot);
             Bullet bullet = go.GetComponent<Bullet>();
-            if (bullet != null) bullet.Launch(weapon.projectileSpeed, weapon.damage, null);
+            if (bullet != null)
+            {
+                bullet.IgnoreShooter(gameObject); // don't hit our own collider when firing
+                bullet.Launch(weapon.projectileSpeed, weapon.damage, null);
+            }
 
             if (weapon.fireSFX != null && AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX(weapon.fireSFX);
