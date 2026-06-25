@@ -1,5 +1,5 @@
 ﻿<Solution>
-  <Project Path="HTraceSSGI.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="HTraceSSGI.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>
