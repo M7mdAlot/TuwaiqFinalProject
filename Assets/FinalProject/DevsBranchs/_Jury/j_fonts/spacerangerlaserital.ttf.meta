@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e01686be12941774e9a734c427d1c78c
+guid: d183d583571c5c64ab58a93c1d144d37
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Front Lines
+  - Space Ranger Laser Italic
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
