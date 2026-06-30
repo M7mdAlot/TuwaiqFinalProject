@@ -10,20 +10,22 @@ public class TinyToasterController : MonoBehaviour
     public Animator animator;
     public Transform cameraRoot;
 
+    [Header("Input Action Names")]
+    public string moveActionName = "Move";
+    public string lookActionName = "Look";
+    public string sprintActionName = "Sprint";
+    public string jumpActionName = "Jump";
+    public string slideActionName = "Slide";
+
     [Header("Movement")]
     public float walkSpeed = 4f;
     public float runSpeed = 7f;
     public float jumpHeight = 1.5f;
     public float gravity = -20f;
 
-    [Header("Weapon Lock")]
-    public bool movementLocked = false;
-
-    [Header("Jump / Slide Checks")]
-    public bool requireGroundedForJump = false;
-    public bool requireGroundedForSlide = false;
-
     [Header("Slide")]
+    public bool slideRequiresSprint = false;
+    public bool slideRequiresGrounded = false;
     public float slideSpeed = 10f;
     public float slideDuration = 0.8f;
     public float slideCooldown = 1f;
@@ -33,14 +35,6 @@ public class TinyToasterController : MonoBehaviour
     public float minLookAngle = -80f;
     public float maxLookAngle = 80f;
 
-    [Header("Input Action Names")]
-    public string moveActionName = "Move";
-    public string lookActionName = "Look";
-    public string sprintActionName = "Sprint";
-    public string jumpActionName = "Jump";
-    public string slideActionName = "Slide";
-    public string interactActionName = "Interact";
-
     [Header("Animator Parameters")]
     public string moveXParam = "MoveX";
     public string moveYParam = "MoveY";
@@ -49,20 +43,21 @@ public class TinyToasterController : MonoBehaviour
     public string isRunningParam = "IsRunning";
     public string isJumpingParam = "IsJumping";
     public string isSlidingParam = "IsSliding";
-    public string interactParam = "Interact";
     public string damageParam = "Damage";
     public string isDeadParam = "IsDead";
 
-    [Header("Animation")]
+    [Header("Animation Timing")]
     public float animationSmoothTime = 0.1f;
     public float jumpAnimationTime = 0.6f;
+
+    [Header("State")]
+    public bool movementLocked;
 
     private InputAction moveAction;
     private InputAction lookAction;
     private InputAction sprintAction;
     private InputAction jumpAction;
     private InputAction slideAction;
-    private InputAction interactAction;
 
     private float verticalVelocity;
     private float cameraPitch;
@@ -88,7 +83,7 @@ public class TinyToasterController : MonoBehaviour
 
         if (playerInput == null)
         {
-            Debug.LogError("PlayerInput is missing.");
+            Debug.LogError("TinyToasterController: PlayerInput is missing.");
             return;
         }
 
@@ -97,7 +92,6 @@ public class TinyToasterController : MonoBehaviour
         sprintAction = playerInput.actions.FindAction(sprintActionName, false);
         jumpAction = playerInput.actions.FindAction(jumpActionName, false);
         slideAction = playerInput.actions.FindAction(slideActionName, false);
-        interactAction = playerInput.actions.FindAction(interactActionName, false);
     }
 
     void Start()
@@ -118,7 +112,6 @@ public class TinyToasterController : MonoBehaviour
         if (isDead) return;
         if (characterController == null) return;
         if (!characterController.enabled) return;
-        if (!gameObject.activeInHierarchy) return;
 
         Vector2 moveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
         Vector2 lookInput = lookAction != null ? lookAction.ReadValue<Vector2>() : Vector2.zero;
@@ -128,31 +121,8 @@ public class TinyToasterController : MonoBehaviour
 
         HandleLook(lookInput);
         HandleMovement(moveInput);
-
-        if (!movementLocked)
-            HandleButtonInputs();
-        else
-            HandleInteractOnly();
-
+        HandleActions();
         UpdateAnimator(moveInput);
-    }
-
-    void HandleButtonInputs()
-    {
-        if (jumpAction != null && jumpAction.WasPressedThisFrame())
-            TryJump();
-
-        if (slideAction != null && slideAction.WasPressedThisFrame())
-            TrySlide();
-
-        if (interactAction != null && interactAction.WasPressedThisFrame())
-            TryInteract();
-    }
-
-    void HandleInteractOnly()
-    {
-        if (interactAction != null && interactAction.WasPressedThisFrame())
-            TryInteract();
     }
 
     void HandleLook(Vector2 lookInput)
@@ -169,9 +139,7 @@ public class TinyToasterController : MonoBehaviour
 
     void HandleMovement(Vector2 moveInput)
     {
-        bool isGrounded = characterController.isGrounded;
-
-        if (isGrounded && verticalVelocity < 0f)
+        if (characterController.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
 
         if (slideCooldownTimer > 0f)
@@ -205,15 +173,21 @@ public class TinyToasterController : MonoBehaviour
         characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
     }
 
+    void HandleActions()
+    {
+        if (movementLocked) return;
+
+        if (jumpAction != null && jumpAction.WasPressedThisFrame())
+            TryJump();
+
+        if (slideAction != null && slideAction.WasPressedThisFrame())
+            TrySlide();
+    }
+
     void TryJump()
     {
-        if (isDead) return;
-        if (movementLocked) return;
         if (isSliding) return;
         if (isJumpAnimating) return;
-
-        if (requireGroundedForJump && !characterController.isGrounded)
-            return;
 
         verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
@@ -236,20 +210,20 @@ public class TinyToasterController : MonoBehaviour
 
     void TrySlide()
     {
-        if (isDead) return;
-        if (movementLocked) return;
         if (isSliding) return;
         if (slideCooldownTimer > 0f) return;
 
-        if (requireGroundedForSlide && !characterController.isGrounded)
+        if (slideRequiresGrounded && !characterController.isGrounded)
             return;
 
         Vector2 moveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
 
         bool isMoving = moveInput.sqrMagnitude > 0.01f;
-        bool isRunning = sprintAction != null && sprintAction.IsPressed() && isMoving;
+        bool isSprinting = sprintAction != null && sprintAction.IsPressed();
 
-        if (!isRunning)
+        if (!isMoving) return;
+
+        if (slideRequiresSprint && !isSprinting)
             return;
 
         Vector3 direction = transform.right * moveInput.x + transform.forward * moveInput.y;
@@ -273,14 +247,6 @@ public class TinyToasterController : MonoBehaviour
 
         if (animator != null)
             animator.SetBool(isSlidingParam, false);
-    }
-
-    void TryInteract()
-    {
-        if (isDead) return;
-
-        if (animator != null)
-            animator.SetTrigger(interactParam);
     }
 
     void UpdateAnimator(Vector2 moveInput)
@@ -312,6 +278,7 @@ public class TinyToasterController : MonoBehaviour
                 animator.SetFloat(moveXParam, 0f);
                 animator.SetFloat(moveYParam, 0f);
                 animator.SetFloat(speedParam, 0f);
+
                 animator.SetBool(isMovingParam, false);
                 animator.SetBool(isRunningParam, false);
                 animator.SetBool(isJumpingParam, false);
@@ -334,23 +301,5 @@ public class TinyToasterController : MonoBehaviour
 
         if (animator != null)
             animator.SetBool(isDeadParam, true);
-    }
-
-    public void OnJump(InputValue value)
-    {
-        if (value.isPressed)
-            TryJump();
-    }
-
-    public void OnSlide(InputValue value)
-    {
-        if (value.isPressed)
-            TrySlide();
-    }
-
-    public void OnInteract(InputValue value)
-    {
-        if (value.isPressed)
-            TryInteract();
     }
 }

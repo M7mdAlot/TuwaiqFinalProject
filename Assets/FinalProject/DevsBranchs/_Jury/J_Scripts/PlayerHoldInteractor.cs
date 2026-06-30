@@ -7,6 +7,7 @@ public class PlayerHoldInteractor : MonoBehaviour
     [Header("References")]
     public Camera playerCamera;
     public PlayerInput playerInput;
+    public AegisWeaponController weaponController;
 
     [Header("UI")]
     public GameObject interactPromptRoot;
@@ -30,7 +31,6 @@ public class PlayerHoldInteractor : MonoBehaviour
     private InputAction interactAction;
     private SimpleInteractable currentInteractable;
     private float holdTimer;
-
     private float originalFillWidth;
 
     void Awake()
@@ -41,14 +41,14 @@ public class PlayerHoldInteractor : MonoBehaviour
         if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
 
+        if (weaponController == null)
+            weaponController = GetComponent<AegisWeaponController>();
+
         if (playerInput != null)
             interactAction = playerInput.actions.FindAction(interactActionName, false);
 
         if (loadFillRect != null)
-        {
             originalFillWidth = loadFillRect.rect.width;
-            SetLoadAmount(0f);
-        }
     }
 
     void Start()
@@ -58,8 +58,21 @@ public class PlayerHoldInteractor : MonoBehaviour
 
     void Update()
     {
+        if (InteractionIsBlocked())
+        {
+            currentInteractable = null;
+            holdTimer = 0f;
+            HidePrompt();
+            return;
+        }
+
         FindInteractable();
         HandleHoldInteraction();
+    }
+
+    bool InteractionIsBlocked()
+    {
+        return weaponController != null && weaponController.BlocksInteraction;
     }
 
     void FindInteractable()
@@ -71,9 +84,7 @@ public class PlayerHoldInteractor : MonoBehaviour
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
             if (Physics.Raycast(ray, out RaycastHit hit, interactRange, interactLayers))
-            {
                 foundInteractable = hit.collider.GetComponentInParent<SimpleInteractable>();
-            }
         }
 
         if (foundInteractable != currentInteractable)
@@ -94,7 +105,7 @@ public class PlayerHoldInteractor : MonoBehaviour
         if (currentInteractable == null) return;
         if (!currentInteractable.CanInteract()) return;
 
-        bool holdingInteract = IsInteractHeld();
+        bool holdingInteract = interactAction != null && interactAction.IsPressed();
 
         float neededTime = currentInteractable.GetHoldTime(defaultHoldTime);
 
@@ -121,14 +132,6 @@ public class PlayerHoldInteractor : MonoBehaviour
 
             SetLoadAmount(holdTimer / neededTime);
         }
-    }
-
-    bool IsInteractHeld()
-    {
-        bool actionHeld = interactAction != null && interactAction.IsPressed();
-        bool keyboardHeld = Keyboard.current != null && Keyboard.current.eKey.isPressed;
-
-        return actionHeld || keyboardHeld;
     }
 
     void ShowPrompt(string text)

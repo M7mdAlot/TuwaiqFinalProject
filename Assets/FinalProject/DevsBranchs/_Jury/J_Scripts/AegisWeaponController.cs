@@ -25,16 +25,25 @@ public class AegisWeaponController : MonoBehaviour
     public string fireAutoParam = "FireAuto";
     public string reloadParam = "Refill";
 
-    [Header("Animator State Names")]
-    public string normalIdleStateName = "Idle normal";
-    public string weaponIdleStateName = "idle rifle";
+    [Header("Zoom")]
+    public float normalFOV = 60f;
+    public float aimFOV = 35f;
+    public float zoomSpeed = 12f;
 
     [Header("Shooting")]
-    public float singleShotCooldown = 0.25f;
-    public float autoFireRate = 0.12f;
-    public float holdToAutoTime = 0.22f;
+    public float singleShotCooldown = 0.2f;
+    public float autoFireRate = 0.09f;
+    public float autoStartDelay = 0.18f;
     public float range = 100f;
     public int damage = 10;
+
+    [Header("Interaction Blocking")]
+    public bool blockInteractionWhileWeaponEquipped = true;
+
+    public bool HasWeapon => hasWeapon;
+    public bool IsAiming => hasWeapon && aimAction != null && aimAction.IsPressed();
+    public bool IsFiring => hasWeapon && fireAction != null && fireAction.IsPressed();
+    public bool BlocksInteraction => blockInteractionWhileWeaponEquipped && hasWeapon;
 
     private InputAction switchWeaponAction;
     private InputAction aimAction;
@@ -43,6 +52,7 @@ public class AegisWeaponController : MonoBehaviour
 
     private bool hasWeapon;
     private bool isAutoFiring;
+
     private float firePressedTime;
     private float nextSingleShotTime;
     private float nextAutoShotTime;
@@ -84,6 +94,9 @@ public class AegisWeaponController : MonoBehaviour
         if (movementController != null)
             movementController.SetMovementLocked(false);
 
+        if (playerCamera != null)
+            playerCamera.fieldOfView = normalFOV;
+
         if (animator != null)
         {
             animator.SetBool(hasWeaponParam, false);
@@ -95,7 +108,7 @@ public class AegisWeaponController : MonoBehaviour
     void Update()
     {
         HandleSwitchWeapon();
-        HandleAim();
+        HandleAimAndZoom();
         HandleFire();
         HandleReload();
     }
@@ -135,7 +148,6 @@ public class AegisWeaponController : MonoBehaviour
             animator.ResetTrigger(reloadParam);
 
             animator.SetTrigger(summonWeaponParam);
-            animator.CrossFade(weaponIdleStateName, 0.08f);
         }
     }
 
@@ -153,10 +165,7 @@ public class AegisWeaponController : MonoBehaviour
             animator.ResetTrigger(fireSingleParam);
             animator.ResetTrigger(reloadParam);
             animator.ResetTrigger(summonWeaponParam);
-            animator.ResetTrigger(closeWeaponParam);
-
             animator.SetTrigger(closeWeaponParam);
-            animator.CrossFade(normalIdleStateName, 0.08f);
         }
 
         if (movementController != null)
@@ -166,12 +175,22 @@ public class AegisWeaponController : MonoBehaviour
             weaponObject.SetActive(false);
     }
 
-    void HandleAim()
+    void HandleAimAndZoom()
     {
-        if (animator == null) return;
-
         bool aiming = hasWeapon && aimAction != null && aimAction.IsPressed();
-        animator.SetBool(isAimingParam, aiming);
+
+        if (animator != null)
+            animator.SetBool(isAimingParam, aiming);
+
+        if (playerCamera != null)
+        {
+            float targetFOV = aiming ? aimFOV : normalFOV;
+            playerCamera.fieldOfView = Mathf.Lerp(
+                playerCamera.fieldOfView,
+                targetFOV,
+                Time.deltaTime * zoomSpeed
+            );
+        }
     }
 
     void HandleFire()
@@ -184,6 +203,8 @@ public class AegisWeaponController : MonoBehaviour
         {
             firePressedTime = Time.time;
             isAutoFiring = false;
+            nextAutoShotTime = Time.time + autoStartDelay;
+
             animator.SetBool(fireAutoParam, false);
 
             if (Time.time >= nextSingleShotTime)
@@ -201,10 +222,14 @@ public class AegisWeaponController : MonoBehaviour
         {
             float heldTime = Time.time - firePressedTime;
 
-            if (heldTime >= holdToAutoTime)
+            if (heldTime >= autoStartDelay)
             {
-                isAutoFiring = true;
-                animator.SetBool(fireAutoParam, true);
+                if (!isAutoFiring)
+                {
+                    isAutoFiring = true;
+                    animator.SetBool(fireAutoParam, true);
+                    nextAutoShotTime = Time.time;
+                }
 
                 if (Time.time >= nextAutoShotTime)
                 {
@@ -242,13 +267,8 @@ public class AegisWeaponController : MonoBehaviour
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
         if (Physics.Raycast(ray, out RaycastHit hit, range))
-        {
             Debug.Log("Aegis shot hit: " + hit.collider.name);
-        }
+        else
+            Debug.Log("Aegis shot fired.");
     }
-
-    public void OnSwitchWeapon(InputValue value) { }
-    public void OnFire(InputValue value) { }
-    public void OnReload(InputValue value) { }
-    public void OnAim(InputValue value) { }
 }
