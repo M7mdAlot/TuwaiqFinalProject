@@ -9,30 +9,17 @@ public class SimpleInteractable : MonoBehaviour
         ActivateTarget,
         DeactivateTarget,
         ToggleTarget,
-        EquipToSocket,
         UnityEventOnly
     }
 
     [Header("Prompt")]
-    public string promptText = "Press E to interact";
+    public string promptText = "Hold E to interact";
     public float holdTime = 5f;
 
     [Header("Interaction")]
     public InteractionType interactionType = InteractionType.UnityEventOnly;
     public bool oneTimeOnly = true;
-
-    [Header("Target")]
     public GameObject targetObject;
-
-    [Header("Equip Settings")]
-    public Transform equipSocket;
-    public Vector3 equippedLocalPosition;
-    public Vector3 equippedLocalEulerAngles;
-    public Vector3 equippedLocalScale = Vector3.one;
-
-    [Header("After Interaction")]
-    public bool disableCollidersAfterInteract = true;
-    public bool disableThisObjectAfterInteract = false;
 
     [Header("Events")]
     public UnityEvent onInteract;
@@ -68,6 +55,8 @@ public class SimpleInteractable : MonoBehaviour
 
         GameObject actualTarget = targetObject != null ? targetObject : gameObject;
 
+        onInteract?.Invoke();
+
         switch (interactionType)
         {
             case InteractionType.DestroySelf:
@@ -86,44 +75,8 @@ public class SimpleInteractable : MonoBehaviour
                 actualTarget.SetActive(!actualTarget.activeSelf);
                 break;
 
-            case InteractionType.EquipToSocket:
-                EquipObject(actualTarget);
-                break;
-
             case InteractionType.UnityEventOnly:
                 break;
-        }
-
-        onInteract?.Invoke();
-
-        if (disableCollidersAfterInteract)
-        {
-            Collider[] colliders = GetComponentsInChildren<Collider>();
-            foreach (Collider col in colliders)
-                col.enabled = false;
-        }
-
-        if (disableThisObjectAfterInteract && interactionType != InteractionType.DestroySelf)
-            gameObject.SetActive(false);
-    }
-
-    void EquipObject(GameObject objectToEquip)
-    {
-        if (objectToEquip == null) return;
-        if (equipSocket == null) return;
-
-        objectToEquip.SetActive(true);
-        objectToEquip.transform.SetParent(equipSocket);
-
-        objectToEquip.transform.localPosition = equippedLocalPosition;
-        objectToEquip.transform.localRotation = Quaternion.Euler(equippedLocalEulerAngles);
-        objectToEquip.transform.localScale = equippedLocalScale;
-
-        Rigidbody rb = objectToEquip.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
         }
     }
 }

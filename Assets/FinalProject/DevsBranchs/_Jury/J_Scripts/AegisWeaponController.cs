@@ -5,7 +5,6 @@ public class AegisWeaponController : MonoBehaviour
 {
     [Header("References")]
     public PlayerInput playerInput;
-    public Animator animator;
     public Camera playerCamera;
     public GameObject weaponObject;
     public TinyToasterController movementController;
@@ -16,14 +15,9 @@ public class AegisWeaponController : MonoBehaviour
     public string fireActionName = "Fire";
     public string reloadActionName = "Reload";
 
-    [Header("Animator Parameters")]
-    public string hasWeaponParam = "HasWeapon";
-    public string isAimingParam = "IsAiming";
-    public string summonWeaponParam = "SummonWeapon";
-    public string closeWeaponParam = "CloseWeapon";
-    public string fireSingleParam = "FireSingle";
-    public string fireAutoParam = "FireAuto";
-    public string reloadParam = "Refill";
+    [Header("Weapon")]
+    public bool requireWeaponToFire = true;
+    public bool lockMovementWhileWeaponEquipped = true;
 
     [Header("Zoom")]
     public float normalFOV = 60f;
@@ -31,19 +25,31 @@ public class AegisWeaponController : MonoBehaviour
     public float zoomSpeed = 12f;
 
     [Header("Shooting")]
-    public float singleShotCooldown = 0.2f;
-    public float autoFireRate = 0.09f;
     public float autoStartDelay = 0.18f;
+    public float autoFireRate = 0.09f;
     public float range = 100f;
     public int damage = 10;
 
     [Header("Interaction Blocking")]
-    public bool blockInteractionWhileWeaponEquipped = true;
+    public bool blockInteractionWhileWeaponEquipped = false;
+    public bool blockInteractionWhileFiring = true;
 
     public bool HasWeapon => hasWeapon;
-    public bool IsAiming => hasWeapon && aimAction != null && aimAction.IsPressed();
-    public bool IsFiring => hasWeapon && fireAction != null && fireAction.IsPressed();
-    public bool BlocksInteraction => blockInteractionWhileWeaponEquipped && hasWeapon;
+    public bool IsFiring => isFireButtonHeld && (!requireWeaponToFire || hasWeapon);
+
+    public bool BlocksInteraction
+    {
+        get
+        {
+            if (blockInteractionWhileWeaponEquipped && hasWeapon)
+                return true;
+
+            if (blockInteractionWhileFiring && IsFiring)
+                return true;
+
+            return false;
+        }
+    }
 
     private InputAction switchWeaponAction;
     private InputAction aimAction;
@@ -51,19 +57,16 @@ public class AegisWeaponController : MonoBehaviour
     private InputAction reloadAction;
 
     private bool hasWeapon;
-    private bool isAutoFiring;
+    private bool isFireButtonHeld;
+    private bool wasFireButtonHeld;
 
-    private float firePressedTime;
-    private float nextSingleShotTime;
+    private float fireHeldTimer;
     private float nextAutoShotTime;
 
     void Awake()
     {
         if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
-
-        if (animator == null)
-            animator = GetComponentInChildren<Animator>();
 
         if (playerCamera == null)
             playerCamera = Camera.main;
@@ -74,6 +77,7 @@ public class AegisWeaponController : MonoBehaviour
         if (playerInput == null)
         {
             Debug.LogError("AegisWeaponController: PlayerInput is missing.");
+            enabled = false;
             return;
         }
 
@@ -81,34 +85,25 @@ public class AegisWeaponController : MonoBehaviour
         aimAction = playerInput.actions.FindAction(aimActionName, false);
         fireAction = playerInput.actions.FindAction(fireActionName, false);
         reloadAction = playerInput.actions.FindAction(reloadActionName, false);
+
+        CheckAction(switchWeaponAction, switchWeaponActionName);
+        CheckAction(aimAction, aimActionName);
+        CheckAction(fireAction, fireActionName);
+        CheckAction(reloadAction, reloadActionName);
     }
 
     void Start()
     {
-        hasWeapon = false;
-        isAutoFiring = false;
-
-        if (weaponObject != null)
-            weaponObject.SetActive(false);
-
-        if (movementController != null)
-            movementController.SetMovementLocked(false);
+        SetWeapon(false);
 
         if (playerCamera != null)
             playerCamera.fieldOfView = normalFOV;
-
-        if (animator != null)
-        {
-            animator.SetBool(hasWeaponParam, false);
-            animator.SetBool(isAimingParam, false);
-            animator.SetBool(fireAutoParam, false);
-        }
     }
 
     void Update()
     {
         HandleSwitchWeapon();
-        HandleAimAndZoom();
+        HandleZoom();
         HandleFire();
         HandleReload();
     }
@@ -118,151 +113,103 @@ public class AegisWeaponController : MonoBehaviour
         if (switchWeaponAction == null) return;
 
         if (switchWeaponAction.WasPressedThisFrame())
-        {
-            if (hasWeapon)
-                CloseWeapon();
-            else
-                SummonWeapon();
-        }
+            SetWeapon(!hasWeapon);
     }
 
-    void SummonWeapon()
+    void SetWeapon(bool equipped)
     {
-        hasWeapon = true;
-        isAutoFiring = false;
+        hasWeapon = equipped;
+
+        isFireButtonHeld = false;
+        wasFireButtonHeld = false;
+        fireHeldTimer = 0f;
 
         if (weaponObject != null)
-            weaponObject.SetActive(true);
+            weaponObject.SetActive(hasWeapon);
 
         if (movementController != null)
-            movementController.SetMovementLocked(true);
+            movementController.SetMovementLocked(lockMovementWhileWeaponEquipped && hasWeapon);
 
-        if (animator != null)
-        {
-            animator.SetBool(hasWeaponParam, true);
-            animator.SetBool(isAimingParam, false);
-            animator.SetBool(fireAutoParam, false);
-
-            animator.ResetTrigger(closeWeaponParam);
-            animator.ResetTrigger(fireSingleParam);
-            animator.ResetTrigger(reloadParam);
-
-            animator.SetTrigger(summonWeaponParam);
-        }
+        Debug.Log(hasWeapon ? "Weapon equipped." : "Weapon closed.");
     }
 
-    void CloseWeapon()
-    {
-        hasWeapon = false;
-        isAutoFiring = false;
-
-        if (animator != null)
-        {
-            animator.SetBool(hasWeaponParam, false);
-            animator.SetBool(isAimingParam, false);
-            animator.SetBool(fireAutoParam, false);
-
-            animator.ResetTrigger(fireSingleParam);
-            animator.ResetTrigger(reloadParam);
-            animator.ResetTrigger(summonWeaponParam);
-            animator.SetTrigger(closeWeaponParam);
-        }
-
-        if (movementController != null)
-            movementController.SetMovementLocked(false);
-
-        if (weaponObject != null)
-            weaponObject.SetActive(false);
-    }
-
-    void HandleAimAndZoom()
+    void HandleZoom()
     {
         bool aiming = hasWeapon && aimAction != null && aimAction.IsPressed();
 
-        if (animator != null)
-            animator.SetBool(isAimingParam, aiming);
+        if (playerCamera == null) return;
 
-        if (playerCamera != null)
-        {
-            float targetFOV = aiming ? aimFOV : normalFOV;
-            playerCamera.fieldOfView = Mathf.Lerp(
-                playerCamera.fieldOfView,
-                targetFOV,
-                Time.deltaTime * zoomSpeed
-            );
-        }
+        float targetFOV = aiming ? aimFOV : normalFOV;
+
+        playerCamera.fieldOfView = Mathf.Lerp(
+            playerCamera.fieldOfView,
+            targetFOV,
+            Time.deltaTime * zoomSpeed
+        );
     }
 
     void HandleFire()
     {
-        if (!hasWeapon) return;
         if (fireAction == null) return;
-        if (animator == null) return;
 
-        if (fireAction.WasPressedThisFrame())
+        if (requireWeaponToFire && !hasWeapon)
         {
-            firePressedTime = Time.time;
-            isAutoFiring = false;
+            ResetFire();
+            return;
+        }
+
+        isFireButtonHeld = fireAction.IsPressed();
+
+        // أول ضغطة = طلقة وحدة فورًا
+        if (isFireButtonHeld && !wasFireButtonHeld)
+        {
+            fireHeldTimer = 0f;
             nextAutoShotTime = Time.time + autoStartDelay;
 
-            animator.SetBool(fireAutoParam, false);
+            ShootRaycast();
+        }
 
-            if (Time.time >= nextSingleShotTime)
+        // تعليق الزر = طلق متكرر
+        if (isFireButtonHeld)
+        {
+            fireHeldTimer += Time.deltaTime;
+
+            if (fireHeldTimer >= autoStartDelay && Time.time >= nextAutoShotTime)
             {
-                animator.ResetTrigger(fireSingleParam);
-                animator.SetTrigger(fireSingleParam);
-
                 ShootRaycast();
-
-                nextSingleShotTime = Time.time + singleShotCooldown;
+                nextAutoShotTime = Time.time + autoFireRate;
             }
         }
 
-        if (fireAction.IsPressed())
-        {
-            float heldTime = Time.time - firePressedTime;
+        if (!isFireButtonHeld && wasFireButtonHeld)
+            ResetFire();
 
-            if (heldTime >= autoStartDelay)
-            {
-                if (!isAutoFiring)
-                {
-                    isAutoFiring = true;
-                    animator.SetBool(fireAutoParam, true);
-                    nextAutoShotTime = Time.time;
-                }
+        wasFireButtonHeld = isFireButtonHeld;
+    }
 
-                if (Time.time >= nextAutoShotTime)
-                {
-                    ShootRaycast();
-                    nextAutoShotTime = Time.time + autoFireRate;
-                }
-            }
-        }
-
-        if (fireAction.WasReleasedThisFrame())
-        {
-            isAutoFiring = false;
-            animator.SetBool(fireAutoParam, false);
-        }
+    void ResetFire()
+    {
+        isFireButtonHeld = false;
+        wasFireButtonHeld = false;
+        fireHeldTimer = 0f;
     }
 
     void HandleReload()
     {
-        if (!hasWeapon) return;
         if (reloadAction == null) return;
-        if (animator == null) return;
+        if (requireWeaponToFire && !hasWeapon) return;
 
         if (reloadAction.WasPressedThisFrame())
-        {
-            isAutoFiring = false;
-            animator.SetBool(fireAutoParam, false);
-            animator.SetTrigger(reloadParam);
-        }
+            Debug.Log("Reload / Refill pressed.");
     }
 
     void ShootRaycast()
     {
-        if (playerCamera == null) return;
+        if (playerCamera == null)
+        {
+            Debug.LogWarning("No camera assigned for shooting.");
+            return;
+        }
 
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
@@ -270,5 +217,11 @@ public class AegisWeaponController : MonoBehaviour
             Debug.Log("Aegis shot hit: " + hit.collider.name);
         else
             Debug.Log("Aegis shot fired.");
+    }
+
+    void CheckAction(InputAction action, string actionName)
+    {
+        if (action == null)
+            Debug.LogWarning("AegisWeaponController: Missing Input Action: " + actionName);
     }
 }
