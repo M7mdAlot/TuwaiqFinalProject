@@ -457,7 +457,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 6573e9b537464ec478b66ea990a5b474, type: 3}
       propertyPath: m_Name
-      value: final gun 10 with textures
+      value: SciFi AutoRifle
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 6573e9b537464ec478b66ea990a5b474, type: 3}
       propertyPath: m_IsActive
@@ -2016,6 +2016,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Aegis.Weapons.WeaponPickup
   _weaponData: {fileID: 11400000, guid: 0b93646f7172cea4197c9f8fec1ea3d4, type: 2}
   _promptOverride: Take Plasm Gun
+  OnPickedUp:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1869296203
 GameObject:
   m_ObjectHideFlags: 0
@@ -2404,7 +2407,7 @@ GameObject:
   - component: {fileID: 543450651993013550}
   - component: {fileID: 1219883708}
   m_Layer: 0
-  m_Name: Final Laser Gun 009
+  m_Name: ChargingWeaponGun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
