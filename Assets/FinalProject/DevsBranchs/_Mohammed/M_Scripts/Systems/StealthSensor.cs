@@ -22,7 +22,16 @@ namespace Aegis.Systems
         [Tooltip("Solid things that block line of sight.")]
         [SerializeField] private LayerMask _obstacleMask = ~0;
 
+        [Header("Debug visuals (Editor only)")]
+        [Tooltip("ON = cone is always drawn in the Scene view. OFF = only when this guard is selected.")]
+        [SerializeField] private bool _drawGizmosAlways = false;
+        [SerializeField] private Color _coneColor = new Color(1f, 0.92f, 0.016f, 0.18f); // semi-transparent yellow
+
         public bool CanSeeTarget { get; private set; }
+        public Transform Target => _target;
+        public float ViewRange => _viewRange;
+        public float ViewAngle => _viewAngle;
+        public Transform EyesOrFallback => _eyes != null ? _eyes : transform;
 
         public event Action TargetSpotted;
         public event Action TargetLost;
@@ -63,5 +72,36 @@ namespace Aegis.Systems
 
             return true;
         }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()        { if (_drawGizmosAlways) DrawViewCone(); }
+        private void OnDrawGizmosSelected(){ if (!_drawGizmosAlways) DrawViewCone(); }
+
+        private void DrawViewCone()
+        {
+            Transform origin = EyesOrFallback;
+
+            // Filled pie slice (Handles renders nicer arcs than Gizmos).
+            UnityEditor.Handles.color = _coneColor;
+            UnityEditor.Handles.DrawSolidArc(
+                origin.position, Vector3.up,
+                Quaternion.AngleAxis(-_viewAngle * 0.5f, Vector3.up) * origin.forward,
+                _viewAngle, _viewRange);
+
+            // Wireframe outline so the cone reads clearly.
+            UnityEditor.Handles.color = new Color(_coneColor.r, _coneColor.g, _coneColor.b, 0.9f);
+            UnityEditor.Handles.DrawWireArc(
+                origin.position, Vector3.up,
+                Quaternion.AngleAxis(-_viewAngle * 0.5f, Vector3.up) * origin.forward,
+                _viewAngle, _viewRange);
+
+            // The two edge rays.
+            Vector3 left  = Quaternion.AngleAxis(-_viewAngle * 0.5f, Vector3.up) * origin.forward * _viewRange;
+            Vector3 right = Quaternion.AngleAxis( _viewAngle * 0.5f, Vector3.up) * origin.forward * _viewRange;
+            Gizmos.color = new Color(_coneColor.r, _coneColor.g, _coneColor.b, 0.9f);
+            Gizmos.DrawRay(origin.position, left);
+            Gizmos.DrawRay(origin.position, right);
+        }
+#endif
     }
 }

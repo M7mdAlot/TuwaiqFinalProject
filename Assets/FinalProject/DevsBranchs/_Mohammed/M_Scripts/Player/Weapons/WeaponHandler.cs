@@ -57,6 +57,7 @@ namespace Aegis.Player
             _inputReader.FireStartedEvent += OnFireStarted;
             _inputReader.FireCanceledEvent += OnFireCanceled;
             _inputReader.SwitchWeaponEvent += OnSwitchWeapon;
+            _inputReader.EquipSlotEvent += OnEquipSlot;
             _inputReader.ReloadEvent += Reload;
         }
 
@@ -66,6 +67,7 @@ namespace Aegis.Player
             _inputReader.FireStartedEvent -= OnFireStarted;
             _inputReader.FireCanceledEvent -= OnFireCanceled;
             _inputReader.SwitchWeaponEvent -= OnSwitchWeapon;
+            _inputReader.EquipSlotEvent -= OnEquipSlot;
             _inputReader.ReloadEvent -= Reload;
         }
 
@@ -172,6 +174,12 @@ namespace Aegis.Player
             else if (direction < -0.1f) EquipPrevious();
         }
 
+        /// <summary>Direct slot equip via number keys. Slot 1 = weapon 0, slot 2 = weapon 1, etc.</summary>
+        private void OnEquipSlot(int slot)
+        {
+            EquipIndex(slot - 1);
+        }
+
         // ---- Firing ----
         private void FireOneShot()
         {
@@ -193,6 +201,7 @@ namespace Aegis.Player
             if (bullet != null)
             {
                 bullet.IgnoreShooter(gameObject); // don't hit our own player capsule when aiming down
+                bullet.SplashRadius = w.Data.splashRadius; // 0 for normal bullets, > 0 = explodes
                 bullet.Launch(w.Data.projectileSpeed, w.Data.damage, null);
             }
 

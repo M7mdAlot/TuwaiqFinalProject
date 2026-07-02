@@ -23,6 +23,8 @@ namespace Aegis.Enemies
         public float detectionRadius = 15f;
         public float rangedAttackRange = 10f;
         public float meleeAttackRange = 2f;
+        [Tooltip("Radius for shouting to allies when this enemy spots the player. 0 = doesn't alert anyone.")]
+        public float alertRadius = 12f;
 
         [Header("Loadout")]
         public WeaponData weapon;

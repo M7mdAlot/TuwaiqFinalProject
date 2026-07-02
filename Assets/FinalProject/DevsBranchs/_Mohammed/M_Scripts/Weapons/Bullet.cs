@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Aegis.Core;
 
@@ -26,6 +27,11 @@ namespace Aegis.Weapons
         [SerializeField] private GameObject _hitVFX;         // optional impact effect
         [Tooltip("Seconds before the spawned hit VFX is force-destroyed. Use -1 to leave cleanup entirely to the VFX prefab itself.")]
         [SerializeField] private float _hitVFXLifetime = 2f;
+        [Tooltip("If > 0, damage every IDamageable within this radius on impact (an explosion).")]
+        [SerializeField] private float _splashRadius = 0f;
+
+        /// <summary>Set by the weapon when firing — explosion radius for AoE bullets (0 = single-target).</summary>
+        public float SplashRadius { get => _splashRadius; set => _splashRadius = value; }
 
         private Rigidbody _rb;
         private ObjectPool<Bullet> _pool;
@@ -97,8 +103,21 @@ namespace Aegis.Weapons
             if (_hasHit) return; // never damage twice
             _hasHit = true;
 
-            IDamageable target = hit.GetComponentInParent<IDamageable>();
-            if (target != null) target.TakeDamage(_damage);
+            // Primary target gets a direct hit.
+            IDamageable primary = hit.GetComponentInParent<IDamageable>();
+            HashSet<IDamageable> damaged = new HashSet<IDamageable>();
+            if (primary != null && damaged.Add(primary)) primary.TakeDamage(_damage);
+
+            // Splash damage (explosion): everything else in radius takes the same damage, once.
+            if (_splashRadius > 0f)
+            {
+                Collider[] inRange = Physics.OverlapSphere(point, _splashRadius);
+                foreach (Collider c in inRange)
+                {
+                    IDamageable d = c.GetComponentInParent<IDamageable>();
+                    if (d != null && damaged.Add(d)) d.TakeDamage(_damage);
+                }
+            }
 
             Despawn(point);
         }
