@@ -8,6 +8,7 @@ public class PlayerHoldInteractor : MonoBehaviour
     public Camera playerCamera;
     public PlayerInput playerInput;
     public AegisWeaponController weaponController;
+    public Animator animator;
 
     [Header("UI")]
     public GameObject interactPromptRoot;
@@ -24,9 +25,16 @@ public class PlayerHoldInteractor : MonoBehaviour
     public LayerMask interactLayers = ~0;
 
     [Header("Hold Settings")]
-    public float defaultHoldTime = 5f;
+    public float defaultHoldTime = 0f;
     public bool drainProgressWhenReleased = true;
     public float drainSpeed = 2f;
+
+    [Header("Animation")]
+    public bool playInteractAnimation = true;
+    public string interactTriggerParam = "Interact";
+
+    [Header("Debug")]
+    public bool debugLogs = true;
 
     private InputAction interactAction;
     private SimpleInteractable currentInteractable;
@@ -45,9 +53,12 @@ public class PlayerHoldInteractor : MonoBehaviour
         if (weaponController == null)
             weaponController = GetComponent<AegisWeaponController>();
 
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
+
         if (playerInput == null)
         {
-            Debug.LogError("PlayerHoldInteractor: PlayerInput is missing.");
+            Debug.LogError("PlayerHoldInteractor: Missing PlayerInput.");
             enabled = false;
             return;
         }
@@ -55,7 +66,7 @@ public class PlayerHoldInteractor : MonoBehaviour
         interactAction = playerInput.actions.FindAction(interactActionName, false);
 
         if (interactAction == null)
-            Debug.LogWarning("PlayerHoldInteractor: Missing Input Action: " + interactActionName);
+            Debug.LogError("PlayerHoldInteractor: Missing Input Action: " + interactActionName);
 
         if (loadFillRect != null)
         {
@@ -85,7 +96,7 @@ public class PlayerHoldInteractor : MonoBehaviour
         }
 
         FindInteractable();
-        HandleHoldInteraction();
+        HandleInteraction();
     }
 
     bool IsBlocked()
@@ -102,7 +113,12 @@ public class PlayerHoldInteractor : MonoBehaviour
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
             if (Physics.Raycast(ray, out RaycastHit hit, interactRange, interactLayers, QueryTriggerInteraction.Collide))
+            {
                 found = hit.collider.GetComponentInParent<SimpleInteractable>();
+
+                if (found != null && found != currentInteractable && debugLogs)
+                    Debug.Log("LOOKING AT INTERACTABLE: " + found.name);
+            }
         }
 
         if (found != currentInteractable)
@@ -118,14 +134,27 @@ public class PlayerHoldInteractor : MonoBehaviour
             HidePrompt();
     }
 
-    void HandleHoldInteraction()
+    void HandleInteraction()
     {
         if (currentInteractable == null) return;
         if (!currentInteractable.CanInteract()) return;
         if (interactAction == null) return;
 
+        bool pressedThisFrame = interactAction.WasPressedThisFrame();
         bool holding = interactAction.IsPressed();
+
         float neededTime = currentInteractable.GetHoldTime(defaultHoldTime);
+
+        if (neededTime <= 0.05f)
+        {
+            if (pressedThisFrame)
+            {
+                PlayInteractAnimation();
+                CompleteInteraction();
+            }
+
+            return;
+        }
 
         if (holding)
         {
@@ -134,12 +163,8 @@ public class PlayerHoldInteractor : MonoBehaviour
 
             if (holdTimer >= neededTime)
             {
-                currentInteractable.Interact(gameObject);
-
-                currentInteractable = null;
-                holdTimer = 0f;
-                SetLoadAmount(0f);
-                HidePrompt();
+                PlayInteractAnimation();
+                CompleteInteraction();
             }
         }
         else
@@ -151,6 +176,32 @@ public class PlayerHoldInteractor : MonoBehaviour
 
             SetLoadAmount(holdTimer / neededTime);
         }
+    }
+
+    void PlayInteractAnimation()
+    {
+        if (!playInteractAnimation) return;
+        if (animator == null) return;
+
+        animator.ResetTrigger(interactTriggerParam);
+        animator.SetTrigger(interactTriggerParam);
+
+        if (debugLogs)
+            Debug.Log("INTERACT ANIMATION TRIGGERED");
+    }
+
+    void CompleteInteraction()
+    {
+        if (debugLogs)
+            Debug.Log("INTERACTED WITH: " + currentInteractable.name);
+
+        currentInteractable.Interact(gameObject);
+
+        currentInteractable = null;
+        holdTimer = 0f;
+
+        SetLoadAmount(0f);
+        HidePrompt();
     }
 
     void ShowPrompt(string text)
