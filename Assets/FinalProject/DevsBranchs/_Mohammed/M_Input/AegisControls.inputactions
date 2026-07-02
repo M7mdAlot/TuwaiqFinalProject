@@ -86,6 +86,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "EquipSlot",
+                    "type": "Value",
+                    "id": "f1a2b3c4-d5e6-4789-9abc-000000000040",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -328,6 +337,50 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Reload",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f1a2b3c4-d5e6-4789-9abc-000000000041",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "scale(factor=1)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "EquipSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f1a2b3c4-d5e6-4789-9abc-000000000042",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "scale(factor=2)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "EquipSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f1a2b3c4-d5e6-4789-9abc-000000000043",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "scale(factor=3)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "EquipSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f1a2b3c4-d5e6-4789-9abc-000000000044",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "scale(factor=4)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "EquipSlot",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

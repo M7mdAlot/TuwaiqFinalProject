@@ -39,6 +39,9 @@ namespace Aegis.Input
         /// <summary>Weapon cycle direction: positive = next, negative = previous.</summary>
         public event Action<float> SwitchWeaponEvent;
 
+        /// <summary>Direct slot selection (1..4) via the number keys.</summary>
+        public event Action<int> EquipSlotEvent;
+
         public event Action ReloadEvent;
 
         private const string GameplayMapName = "Gameplay";
@@ -52,6 +55,7 @@ namespace Aegis.Input
         private InputAction _interact;
         private InputAction _switchWeapon;
         private InputAction _reload;
+        private InputAction _equipSlot;
 
         private void OnEnable()
         {
@@ -71,6 +75,7 @@ namespace Aegis.Input
             _interact = map.FindAction("Interact", throwIfNotFound: true);
             _switchWeapon = map.FindAction("SwitchWeapon", throwIfNotFound: true);
             _reload = map.FindAction("Reload", throwIfNotFound: true);
+            _equipSlot = map.FindAction("EquipSlot", throwIfNotFound: true);
 
             _move.performed += OnMove;
             _move.canceled += OnMove;
@@ -87,6 +92,7 @@ namespace Aegis.Input
             _interact.canceled += OnInteractCanceled;
             _switchWeapon.performed += OnSwitchWeapon;
             _reload.performed += OnReload;
+            _equipSlot.performed += OnEquipSlot;
 
             EnableGameplay();
         }
@@ -110,6 +116,7 @@ namespace Aegis.Input
             _interact.canceled -= OnInteractCanceled;
             _switchWeapon.performed -= OnSwitchWeapon;
             _reload.performed -= OnReload;
+            _equipSlot.performed -= OnEquipSlot;
 
             DisableGameplay();
         }
@@ -154,5 +161,12 @@ namespace Aegis.Input
 
         private void OnSwitchWeapon(InputAction.CallbackContext ctx) => SwitchWeaponEvent?.Invoke(ctx.ReadValue<float>());
         private void OnReload(InputAction.CallbackContext ctx) => ReloadEvent?.Invoke();
+
+        private void OnEquipSlot(InputAction.CallbackContext ctx)
+        {
+            // The scale processor makes key 1 → 1, key 2 → 2, etc. 0 = "released", ignore.
+            int slot = Mathf.RoundToInt(ctx.ReadValue<float>());
+            if (slot > 0) EquipSlotEvent?.Invoke(slot);
+        }
     }
 }
