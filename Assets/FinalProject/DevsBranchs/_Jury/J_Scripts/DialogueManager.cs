@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -128,5 +129,46 @@ public class DialogueManager : MonoBehaviour
     public bool IsDialogueOpen()
     {
         return isDialogueOpen;
+    }
+
+    // Compatibility methods for CampaignManager
+    public void SetDialogue(string speakerName, string[] lines)
+    {
+        StartDialogue(speakerName, lines);
+    }
+
+    public void SetDialogue(string[] lines)
+    {
+        StartDialogue("", lines);
+    }
+
+    public void SetDialogue(string speakerName, string line)
+    {
+        StartDialogue(speakerName, new string[] { line });
+    }
+
+    public void SetDialogue(string line)
+    {
+        StartDialogue("", new string[] { line });
+    }
+
+    public void SetDialogue(List<string> lines)
+    {
+        StartDialogue("", lines.ToArray());
+    }
+
+    public void SetDialogue(string speakerName, List<string> lines)
+    {
+        StartDialogue(speakerName, lines.ToArray());
+    }
+
+    public void SetDialogue(object data)
+    {
+        Debug.LogWarning("SetDialogue was called with unsupported data type: " + data);
+    }
+
+    public void SetDialogue(object data1, object data2)
+    {
+        Debug.LogWarning("SetDialogue was called with unsupported data types: " + data1 + ", " + data2);
     }
 }
