@@ -8,6 +8,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/FinalProject/Scenes/MainScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/FinalProject/DevsBranchs/_Jury/J_Scenes/MAIN MENU.unity
+    guid: 77d8f596fc16d1c48bc65144c4fe94a0
+  - enabled: 1
+    path: Assets/FinalProject/DevsBranchs/_Jury/J_Scenes/X scene.unity
+    guid: dc4677335b5f58847a4c74358ff74e72
+  - enabled: 1
+    path: Assets/FinalProject/DevsBranchs/_Jury/J_Scenes/Aegis scene.unity
+    guid: 24a7708256ab4e44ea0b8a0758589644
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
