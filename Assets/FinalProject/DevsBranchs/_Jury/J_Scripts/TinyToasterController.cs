@@ -121,9 +121,7 @@ public class TinyToasterController : MonoBehaviour
 
     void Start()
     {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
-
+     
         if (animator != null)
         {
             animator.SetBool(isJumpingParam, false);
