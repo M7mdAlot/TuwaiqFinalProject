@@ -1,9 +1,15 @@
 using UnityEngine;
+using Aegis.Core;
 
-public class SimpleHealth : MonoBehaviour
+// Implements Aegis.Core.IDamageable additively (bridge only) so Mohammed's
+// weapon/core systems can damage this object through the interface without
+// changing how TakeDamage(int) already works for existing callers.
+public class SimpleHealth : MonoBehaviour, IDamageable
 {
     public int maxHealth = 100;
     public int currentHealth;
+
+    public bool IsAlive => currentHealth > 0;
 
     void Awake()
     {
@@ -19,6 +25,11 @@ public class SimpleHealth : MonoBehaviour
 
         if (currentHealth <= 0)
             Die();
+    }
+
+    void IDamageable.TakeDamage(float amount)
+    {
+        TakeDamage(Mathf.RoundToInt(amount));
     }
 
     void Die()
