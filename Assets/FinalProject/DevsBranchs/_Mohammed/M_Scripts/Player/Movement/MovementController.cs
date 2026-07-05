@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Aegis.Input;
 
@@ -46,6 +47,12 @@ namespace Aegis.Player
         public bool IsInvulnerable => _isSliding;
         public bool IsSliding => _isSliding;
         public bool IsGrounded => _controller.isGrounded;
+
+        /// <summary>Raised the moment a jump actually launches — used to drive the jump animation.</summary>
+        public event Action Jumped;
+
+        /// <summary>Raised the moment a slide begins — used to drive the slide animation.</summary>
+        public event Action SlideStarted;
 
         private void Awake()
         {
@@ -119,6 +126,7 @@ namespace Aegis.Player
             _slideDirection = dir.sqrMagnitude > 0.01f ? dir : transform.forward;
             _isSliding = true;
             _slideTimer = _slideDuration;
+            SlideStarted?.Invoke();
         }
 
         private Vector3 WalkVelocity()
@@ -146,6 +154,7 @@ namespace Aegis.Player
                 if (_jumpQueued && !_isSliding)
                 {
                     _verticalVelocity = Mathf.Sqrt(_jumpHeight * -2f * _gravity);
+                    Jumped?.Invoke();
                 }
             }
 

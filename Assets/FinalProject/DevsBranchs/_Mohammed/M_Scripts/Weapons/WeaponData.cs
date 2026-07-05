@@ -38,5 +38,15 @@ namespace Aegis.Weapons
         [Header("Muzzle (per weapon, in the muzzle anchor's local space)")]
         [Tooltip("Where this weapon's barrel sticks out, relative to the player's muzzle anchor (e.g. the camera). +X = right, +Y = up, +Z = forward. Different shapes per gun.")]
         public Vector3 muzzleOffset;
+
+        [Header("Recoil (visual kick on fire — read by WeaponRecoil)")]
+        [Tooltip("Positional kick in the weapon socket's local space. Back toward the player = negative Z.")]
+        public Vector3 recoilPositionKick = new Vector3(0f, 0.01f, -0.06f);
+        [Tooltip("Rotational kick in degrees. Negative X pitches the muzzle up (classic kick).")]
+        public Vector3 recoilRotationKick = new Vector3(-6f, 0f, 0f);
+        [Tooltip("How fast the kick decays back toward zero.")]
+        public float recoilReturnSpeed = 8f;
+        [Tooltip("How snappily the weapon follows the kick.")]
+        public float recoilSnappiness = 14f;
     }
 }

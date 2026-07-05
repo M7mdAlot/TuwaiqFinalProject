@@ -1,17 +1,21 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Aegis.Core;
 using Aegis.Core.Events;
 
 namespace Aegis.Systems
 {
     /// <summary>
-    /// Drives the on-screen HUD (GDD §14) by setting values on whatever UI widgets you drop
-    /// in from the SCI-FI UI Pack Pro. It only READS/SETS standard Unity UI components on
-    /// your scene instances (Image fill, Slider value, legacy Text) — it never modifies the
-    /// purchased pack itself. Every reference is optional (null-safe), so the game runs even
-    /// before the HUD is fully assembled.
-    /// Tier 1 — depends only on Tier 0 (event channels) + Unity UI.
+    /// Drives the on-screen HUD (GDD §14) by setting values on your UI widgets. Text uses
+    /// TextMeshPro (<see cref="TMP_Text"/>) to match the teammate's (Jury's) UI, and bars use
+    /// a filled Image or a Slider from the SCI-FI UI Pack Pro. Every reference is optional
+    /// (null-safe), so the game runs before the HUD is fully assembled — and it never edits
+    /// any purchased/teammate asset, only reads/sets their components.
+    ///
+    /// Objectives can delegate to Jury's animated <see cref="ObjectiveUIManager"/> if assigned;
+    /// otherwise a simple built-in banner is used as a fallback.
+    /// Tier 1/5 — depends on Tier 0 (event channels) + Unity UI + TMP.
     /// </summary>
     public class UIManager : Singleton<UIManager>
     {
@@ -20,22 +24,28 @@ namespace Aegis.Systems
         [SerializeField] private Image _healthFill;
         [Tooltip("Alternative: a Slider-style bar (Min Value 0, Max Value 1).")]
         [SerializeField] private Slider _healthSlider;
-        [SerializeField] private Text _healthText;
+        [SerializeField] private TMP_Text _healthText;
         [Tooltip("If set, the health bar updates automatically from this channel (0..1).")]
         [SerializeField] private FloatEventChannelSO _healthChannel;
 
-        [Header("Ammo")]
-        [SerializeField] private Text _ammoText;
+        [Header("Ammo & weapon")]
+        [SerializeField] private TMP_Text _ammoText;
+        [SerializeField] private TMP_Text _weaponNameText;
 
-        [Header("Prompts & banners")]
+        [Header("Interact prompt")]
         [SerializeField] private GameObject _interactPrompt;
-        [SerializeField] private Text _interactPromptText;
+        [SerializeField] private TMP_Text _interactPromptText;
+
+        [Header("Objective (delegates to Jury's ObjectiveUIManager if set)")]
+        [Tooltip("Optional: the teammate's animated objective UI. If set, objectives route through it.")]
+        [SerializeField] private ObjectiveUIManager _objectiveUI;
+        [Tooltip("Fallback banner used only when the ObjectiveUIManager above is empty.")]
         [SerializeField] private GameObject _objectiveBanner;
-        [SerializeField] private Text _objectiveText;
+        [SerializeField] private TMP_Text _objectiveText;
 
         [Header("Crisis timer (e.g. the pack's Timer01 widget)")]
         [SerializeField] private GameObject _crisisTimer;
-        [SerializeField] private Text _crisisTimerText;
+        [SerializeField] private TMP_Text _crisisTimerText;
         [Tooltip("Optional: a filled Image that drains as time runs out.")]
         [SerializeField] private Image _crisisFill;
 
@@ -70,7 +80,13 @@ namespace Aegis.Systems
 
         public void SetAmmo(int current, int max)
         {
-            if (_ammoText != null) _ammoText.text = $"{current} / {max}";
+            if (_ammoText != null)
+                _ammoText.text = max < 0 ? "∞" : $"{current} / {max}"; // ∞ for infinite-ammo weapons
+        }
+
+        public void SetWeaponName(string weaponName)
+        {
+            if (_weaponNameText != null) _weaponNameText.text = weaponName;
         }
 
         public void ShowInteractPrompt(string message)
@@ -84,14 +100,28 @@ namespace Aegis.Systems
             if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
-        public void ShowObjective(string message)
+        /// <summary>Show a new objective. Routes to Jury's animated UI if assigned.</summary>
+        public void ShowObjective(string message) => ShowObjective("NEW OBJECTIVE", message);
+
+        public void ShowObjective(string title, string message)
         {
+            if (_objectiveUI != null)
+            {
+                _objectiveUI.ShowObjective(title, message);
+                return;
+            }
+
+            // Fallback: our own simple banner.
             if (_objectiveText != null) _objectiveText.text = message;
             if (_objectiveBanner != null) _objectiveBanner.SetActive(true);
         }
 
         public void HideObjective()
         {
+            // Jury's UI auto-hides; just clear its persistent line if present.
+            if (_objectiveUI != null && _objectiveUI.persistentObjectiveText != null)
+                _objectiveUI.persistentObjectiveText.text = string.Empty;
+
             if (_objectiveBanner != null) _objectiveBanner.SetActive(false);
         }
 

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 using Aegis.Core;
@@ -48,6 +49,9 @@ namespace Aegis.Enemies
 
         public EnemyState State { get; private set; } = EnemyState.Idle;
         public Faction Faction => _data != null ? _data.faction : Faction.Neutral;
+
+        /// <summary>Raised each time this enemy fires a shot — used to drive its fire animation.</summary>
+        public event Action Fired;
 
         private NavMeshAgent _agent;
         private HealthSystem _health;
@@ -213,6 +217,8 @@ namespace Aegis.Enemies
 
             if (weapon.fireSFX != null && AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX(weapon.fireSFX);
+
+            Fired?.Invoke();
 
             float interval = weapon.fireRate > 0f ? 1f / weapon.fireRate : 0.5f;
             _nextShotTime = Time.time + interval;

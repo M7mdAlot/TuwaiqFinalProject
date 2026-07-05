@@ -43,6 +43,7 @@ namespace Aegis.Input
         public event Action<int> EquipSlotEvent;
 
         public event Action ReloadEvent;
+        public event Action MeleeEvent;
 
         private const string GameplayMapName = "Gameplay";
 
@@ -56,6 +57,7 @@ namespace Aegis.Input
         private InputAction _switchWeapon;
         private InputAction _reload;
         private InputAction _equipSlot;
+        private InputAction _melee;
 
         private void OnEnable()
         {
@@ -76,6 +78,7 @@ namespace Aegis.Input
             _switchWeapon = map.FindAction("SwitchWeapon", throwIfNotFound: true);
             _reload = map.FindAction("Reload", throwIfNotFound: true);
             _equipSlot = map.FindAction("EquipSlot", throwIfNotFound: true);
+            _melee = map.FindAction("Melee", throwIfNotFound: true);
 
             _move.performed += OnMove;
             _move.canceled += OnMove;
@@ -93,6 +96,7 @@ namespace Aegis.Input
             _switchWeapon.performed += OnSwitchWeapon;
             _reload.performed += OnReload;
             _equipSlot.performed += OnEquipSlot;
+            _melee.performed += OnMelee;
 
             EnableGameplay();
         }
@@ -117,6 +121,7 @@ namespace Aegis.Input
             _switchWeapon.performed -= OnSwitchWeapon;
             _reload.performed -= OnReload;
             _equipSlot.performed -= OnEquipSlot;
+            _melee.performed -= OnMelee;
 
             DisableGameplay();
         }
@@ -161,6 +166,7 @@ namespace Aegis.Input
 
         private void OnSwitchWeapon(InputAction.CallbackContext ctx) => SwitchWeaponEvent?.Invoke(ctx.ReadValue<float>());
         private void OnReload(InputAction.CallbackContext ctx) => ReloadEvent?.Invoke();
+        private void OnMelee(InputAction.CallbackContext ctx) => MeleeEvent?.Invoke();
 
         private void OnEquipSlot(InputAction.CallbackContext ctx)
         {
