@@ -667,6 +667,66 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 70df3fde468b763438b7bed7efedb721, type: 3}
+--- !u!1 &2031416215
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2031416217}
+  - component: {fileID: 2031416216}
+  m_Layer: 0
+  m_Name: UIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2031416216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031416215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b7470406072d0c4d99b4199cb42c756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Systems.UIManager
+  _persistAcrossScenes: 1
+  _healthFill: {fileID: 0}
+  _healthSlider: {fileID: 0}
+  _healthText: {fileID: 0}
+  _healthChannel: {fileID: 0}
+  _ammoText: {fileID: 0}
+  _weaponNameText: {fileID: 0}
+  _interactPrompt: {fileID: 0}
+  _interactPromptText: {fileID: 0}
+  _objectiveUI: {fileID: 0}
+  _objectiveBanner: {fileID: 0}
+  _objectiveText: {fileID: 0}
+  _crisisTimer: {fileID: 0}
+  _crisisTimerText: {fileID: 0}
+  _crisisFill: {fileID: 0}
+  _crosshair: {fileID: 0}
+--- !u!4 &2031416217
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031416215}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.11939, y: 0, z: 1.91004}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2858016998182240885
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -741,3 +801,4 @@ SceneRoots:
   - {fileID: 905725530}
   - {fileID: 555855310}
   - {fileID: 1700944125}
+  - {fileID: 2031416217}
