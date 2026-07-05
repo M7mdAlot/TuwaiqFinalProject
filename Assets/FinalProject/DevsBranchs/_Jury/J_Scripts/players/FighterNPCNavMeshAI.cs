@@ -24,6 +24,10 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     public LayerMask playerLayer = ~0;
     public LayerMask obstacleLayer = ~0;
 
+    [Header("Detection Options")]
+    public bool useFieldOfView = false;
+    public bool requireLineOfSight = false;
+
     [Header("Movement")]
     public float patrolSpeed = 2.5f;
     public float chaseSpeed = 4.5f;
@@ -32,25 +36,41 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     [Header("Attack")]
     public float attackRange = 8f;
-    public float attackCooldown = 1.2f;
     public float rotationSpeed = 8f;
-    public int damage = 10;
+    public int damage = 5;
+    public bool damageTargetEvenIfRayMisses = true;
 
-    [Header("Animator Parameters")]
+    [Header("Auto Fire")]
+    public bool useAutoFire = true;
+    public float bulletsPerSecond = 8f;
+
+    [Header("Animator Parameters - Movement")]
     public string speedParam = "Speed";
     public string isMovingParam = "IsMoving";
     public string isRunningParam = "IsRunning";
     public string isAimingParam = "IsAiming";
-    public string shootParam = "Shoot";
-    public string reloadParam = "Reload";
     public string damageParam = "Damage";
     public string isDeadParam = "IsDead";
+
+    [Header("Animator Parameters - Weapon")]
+    public string hasWeaponParam = "HasWeapon";
+    public string summonWeaponParam = "SummonWeapon";
+    public string shootTriggerParam = "FireSingle";
+    public string shootingBoolParam = "FireAuto";
+
+    [Header("Shoot Animation")]
+    public bool forceWeaponAtStart = true;
+    public bool forcePlayShootAnimation = true;
+    public string autoShootAnimationStateName = "multiple shots rifle";
+    public string singleShootAnimationStateName = "single shot rifle";
+    public float shootAnimationFadeTime = 0.03f;
 
     private FighterState state = FighterState.Patrol;
     private Transform target;
 
     private float patrolTimer;
-    private float nextAttackTime;
+    private float nextBulletTime;
+    private bool autoFirePlaying;
 
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
@@ -72,6 +92,15 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         {
             agent.speed = patrolSpeed;
             agent.isStopped = false;
+        }
+    }
+
+    void Start()
+    {
+        if (forceWeaponAtStart)
+        {
+            SetBool(hasWeaponParam, true);
+            SetTrigger(summonWeaponParam);
         }
     }
 
@@ -102,24 +131,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void FindTarget()
     {
-        Transform foundTarget = null;
-
-        Collider[] hits = Physics.OverlapSphere(transform.position, visionRange, playerLayer);
-
-        foreach (Collider hit in hits)
-        {
-            PlayerCharacterIdentity identity = hit.GetComponentInParent<PlayerCharacterIdentity>();
-            if (identity == null) continue;
-
-            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X)
-                continue;
-
-            if (CanSeeTarget(identity.transform))
-            {
-                foundTarget = identity.transform;
-                break;
-            }
-        }
+        Transform foundTarget = FindClosestXTarget();
 
         if (foundTarget != null)
         {
@@ -137,11 +149,69 @@ public class FighterNPCNavMeshAI : MonoBehaviour
             target = null;
 
             if (state != FighterState.Patrol)
-            {
                 state = FighterState.Patrol;
-                SetBool(isAimingParam, false);
+
+            StopShootingAnimation();
+        }
+    }
+
+    Transform FindClosestXTarget()
+    {
+        Transform closestTarget = null;
+        float closestDistance = Mathf.Infinity;
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, visionRange, playerLayer);
+
+        foreach (Collider hit in hits)
+        {
+            PlayerCharacterIdentity identity = hit.GetComponentInParent<PlayerCharacterIdentity>();
+            if (identity == null) continue;
+
+            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X)
+                continue;
+
+            if (!CanSeeTarget(identity.transform))
+                continue;
+
+            float distance = Vector3.Distance(transform.position, identity.transform.position);
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestTarget = identity.transform;
             }
         }
+
+        if (closestTarget != null)
+            return closestTarget;
+
+        PlayerCharacterIdentity[] allPlayers =
+            FindObjectsByType<PlayerCharacterIdentity>(FindObjectsSortMode.None);
+
+        foreach (PlayerCharacterIdentity identity in allPlayers)
+        {
+            if (identity == null) continue;
+            if (!identity.gameObject.activeInHierarchy) continue;
+
+            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X)
+                continue;
+
+            float distance = Vector3.Distance(transform.position, identity.transform.position);
+
+            if (distance > visionRange)
+                continue;
+
+            if (!CanSeeTarget(identity.transform))
+                continue;
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestTarget = identity.transform;
+            }
+        }
+
+        return closestTarget;
     }
 
     bool CanSeeTarget(Transform targetTransform)
@@ -152,23 +222,29 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (toTarget.magnitude > visionRange)
             return false;
 
-        float angle = Vector3.Angle(transform.forward, toTarget.normalized);
-
-        if (angle > fieldOfView * 0.5f)
-            return false;
-
-        Vector3 eye = transform.position + Vector3.up * 1.5f;
-        Vector3 targetPoint = targetTransform.position + Vector3.up * 1.2f;
-        Vector3 dir = targetPoint - eye;
-
-        if (Physics.Raycast(eye, dir.normalized, out RaycastHit hit, visionRange, obstacleLayer, QueryTriggerInteraction.Ignore))
+        if (useFieldOfView)
         {
-            PlayerCharacterIdentity identity = hit.collider.GetComponentInParent<PlayerCharacterIdentity>();
+            float angle = Vector3.Angle(transform.forward, toTarget.normalized);
 
-            if (identity == null)
+            if (angle > fieldOfView * 0.5f)
                 return false;
+        }
 
-            return identity.playerType == PlayerCharacterIdentity.PlayerType.X;
+        if (requireLineOfSight)
+        {
+            Vector3 eye = transform.position + Vector3.up * 1.5f;
+            Vector3 targetPoint = targetTransform.position + Vector3.up * 1.2f;
+            Vector3 dir = targetPoint - eye;
+
+            if (Physics.Raycast(eye, dir.normalized, out RaycastHit hit, visionRange, obstacleLayer, QueryTriggerInteraction.Ignore))
+            {
+                PlayerCharacterIdentity identity = hit.collider.GetComponentInParent<PlayerCharacterIdentity>();
+
+                if (identity == null)
+                    return false;
+
+                return identity.playerType == PlayerCharacterIdentity.PlayerType.X;
+            }
         }
 
         return true;
@@ -176,6 +252,8 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void HandlePatrol()
     {
+        StopShootingAnimation();
+
         agent.isStopped = false;
         agent.speed = patrolSpeed;
 
@@ -195,6 +273,8 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void HandleChase()
     {
+        StopShootingAnimation();
+
         if (target == null)
         {
             state = FighterState.Patrol;
@@ -222,6 +302,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (target == null)
         {
             state = FighterState.Patrol;
+            StopShootingAnimation();
             return;
         }
 
@@ -231,6 +312,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         {
             agent.isStopped = false;
             state = FighterState.Chase;
+            StopShootingAnimation();
             return;
         }
 
@@ -238,19 +320,76 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         agent.isStopped = true;
 
         SetBool(isAimingParam, true);
+        SetBool(hasWeaponParam, true);
 
         FaceTarget();
 
-        if (Time.time >= nextAttackTime)
+        if (useAutoFire)
+            AutoFire();
+        else
+            SingleFire();
+    }
+
+    void AutoFire()
+    {
+        StartAutoShootAnimation();
+
+        float bulletDelay = 1f / Mathf.Max(1f, bulletsPerSecond);
+
+        if (Time.time >= nextBulletTime)
         {
-            nextAttackTime = Time.time + attackCooldown;
-            Shoot();
+            nextBulletTime = Time.time + bulletDelay;
+            ShootBullet();
         }
     }
 
-    void Shoot()
+    void SingleFire()
     {
-        SetTrigger(shootParam);
+        if (Time.time >= nextBulletTime)
+        {
+            nextBulletTime = Time.time + 0.8f;
+
+            SetBool(hasWeaponParam, true);
+            SetTrigger(shootTriggerParam);
+
+            if (animator != null && forcePlayShootAnimation && !string.IsNullOrEmpty(singleShootAnimationStateName))
+                animator.CrossFadeInFixedTime(singleShootAnimationStateName, shootAnimationFadeTime, 0);
+
+            ShootBullet();
+        }
+    }
+
+    void StartAutoShootAnimation()
+    {
+        if (autoFirePlaying)
+            return;
+
+        autoFirePlaying = true;
+
+        SetBool(hasWeaponParam, true);
+        SetBool(shootingBoolParam, true);
+
+        if (animator != null && forcePlayShootAnimation && !string.IsNullOrEmpty(autoShootAnimationStateName))
+            animator.CrossFadeInFixedTime(autoShootAnimationStateName, shootAnimationFadeTime, 0);
+
+        Debug.Log(name + " auto fire animation started: " + autoShootAnimationStateName);
+    }
+
+    void StopShootingAnimation()
+    {
+        if (!autoFirePlaying)
+        {
+            SetBool(shootingBoolParam, false);
+            return;
+        }
+
+        autoFirePlaying = false;
+        SetBool(shootingBoolParam, false);
+    }
+
+    void ShootBullet()
+    {
+        if (target == null) return;
 
         Vector3 origin = firePoint != null
             ? firePoint.position
@@ -259,19 +398,42 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         Vector3 targetPosition = target.position + Vector3.up * 1.2f;
         Vector3 direction = (targetPosition - origin).normalized;
 
+        bool damagedPlayer = false;
+
         if (Physics.Raycast(origin, direction, out RaycastHit hit, visionRange, ~0, QueryTriggerInteraction.Ignore))
         {
             PlayerCharacterIdentity identity = hit.collider.GetComponentInParent<PlayerCharacterIdentity>();
 
             if (identity != null && identity.playerType == PlayerCharacterIdentity.PlayerType.X)
             {
-                Debug.Log(name + " shot X.");
+                ApplyDamage(identity.transform);
+                damagedPlayer = true;
 
-                SimpleHealth health = identity.GetComponent<SimpleHealth>();
-                if (health != null)
-                    health.TakeDamage(damage);
+                Debug.Log(name + " bullet hit X.");
             }
         }
+
+        if (!damagedPlayer && damageTargetEvenIfRayMisses)
+        {
+            float distance = Vector3.Distance(transform.position, target.position);
+
+            if (distance <= attackRange + 1.5f)
+            {
+                ApplyDamage(target);
+                Debug.Log(name + " bullet damaged X directly.");
+            }
+        }
+    }
+
+    void ApplyDamage(Transform targetTransform)
+    {
+        if (targetTransform == null) return;
+
+        targetTransform.SendMessageUpwards(
+            "TakeDamage",
+            damage,
+            SendMessageOptions.DontRequireReceiver
+        );
     }
 
     void FaceTarget()
@@ -333,6 +495,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         SetBool(isMovingParam, false);
         SetBool(isRunningParam, false);
         SetBool(isAimingParam, false);
+        SetBool(shootingBoolParam, false);
         SetBool(isDeadParam, true);
     }
 
@@ -349,21 +512,30 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     void SetFloat(string param, float value)
     {
         if (animator == null) return;
+        if (string.IsNullOrEmpty(param)) return;
         if (!animatorParams.ContainsKey(param)) return;
+        if (animatorParams[param] != AnimatorControllerParameterType.Float) return;
+
         animator.SetFloat(param, value);
     }
 
     void SetBool(string param, bool value)
     {
         if (animator == null) return;
+        if (string.IsNullOrEmpty(param)) return;
         if (!animatorParams.ContainsKey(param)) return;
+        if (animatorParams[param] != AnimatorControllerParameterType.Bool) return;
+
         animator.SetBool(param, value);
     }
 
     void SetTrigger(string param)
     {
         if (animator == null) return;
+        if (string.IsNullOrEmpty(param)) return;
         if (!animatorParams.ContainsKey(param)) return;
+        if (animatorParams[param] != AnimatorControllerParameterType.Trigger) return;
+
         animator.SetTrigger(param);
     }
 }
