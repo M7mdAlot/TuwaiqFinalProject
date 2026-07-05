@@ -50,6 +50,7 @@ public class MainMenuUIController : MonoBehaviour
     {
         ShowMainMenu();
         Time.timeScale = 1f;
+        ShowCursor();
     }
 
     void HookButtons()
@@ -70,10 +71,10 @@ public class MainMenuUIController : MonoBehaviour
             nullButton.onClick.AddListener(ChooseNull);
 
         if (cancelCharacterButton != null)
-            cancelCharacterButton.onClick.AddListener(ShowMainMenu);
+            cancelCharacterButton.onClick.AddListener(CancelChooseCharacter);
 
         if (closeCharacterButton != null)
-            closeCharacterButton.onClick.AddListener(ShowMainMenu);
+            closeCharacterButton.onClick.AddListener(CancelChooseCharacter);
 
         if (settingsBackButton != null)
             settingsBackButton.onClick.AddListener(BackFromSettings);
@@ -90,39 +91,142 @@ public class MainMenuUIController : MonoBehaviour
 
     public void ShowMainMenu()
     {
-        SetOnlyPanel(mainMenuPanel);
+        Time.timeScale = 1f;
+        ShowCursor();
 
-        previousPanel = mainMenuPanel;
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(true);
+
+        if (chooseCharacterPanel != null)
+            chooseCharacterPanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
 
         if (gameplayUIPanel != null)
             gameplayUIPanel.SetActive(false);
+
+        previousPanel = mainMenuPanel;
+    }
+
+    public void ShowChooseCharacter()
+    {
+        Time.timeScale = 1f;
+        ShowCursor();
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (chooseCharacterPanel != null)
+            chooseCharacterPanel.SetActive(true);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        if (gameplayUIPanel != null)
+            gameplayUIPanel.SetActive(false);
+
+        previousPanel = mainMenuPanel;
+    }
+
+    public void CancelChooseCharacter()
+    {
+        Time.timeScale = 1f;
+        ShowCursor();
+
+        if (chooseCharacterPanel != null)
+            chooseCharacterPanel.SetActive(false);
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(true);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        if (gameplayUIPanel != null)
+            gameplayUIPanel.SetActive(false);
+
+        previousPanel = mainMenuPanel;
+
+        Debug.Log("Canceled character select. Back to main menu.");
+    }
+
+    public void OpenSettingsFromMainMenu()
+    {
+        Time.timeScale = 1f;
+        ShowCursor();
+
+        previousPanel = mainMenuPanel;
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (chooseCharacterPanel != null)
+            chooseCharacterPanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(true);
+
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
+
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        if (gameplayUIPanel != null)
+            gameplayUIPanel.SetActive(false);
+    }
+
+    public void OpenSettingsFromPause()
+    {
+        Time.timeScale = 0f;
+        ShowCursor();
+
+        previousPanel = pausePanel;
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (chooseCharacterPanel != null)
+            chooseCharacterPanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(true);
+
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
     }
 
-    public void ShowChooseCharacter()
-    {
-        SetOnlyPanel(chooseCharacterPanel);
-        previousPanel = mainMenuPanel;
-    }
-
-    public void OpenSettingsFromMainMenu()
-    {
-        previousPanel = mainMenuPanel;
-        SetOnlyPanel(settingsPanel);
-    }
-
-    public void OpenSettingsFromPause()
-    {
-        previousPanel = pausePanel;
-        SetOnlyPanel(settingsPanel);
-    }
-
     public void BackFromSettings()
     {
+        ShowCursor();
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
         if (previousPanel != null)
-            SetOnlyPanel(previousPanel);
+            previousPanel.SetActive(true);
         else
             ShowMainMenu();
     }
@@ -131,6 +235,8 @@ public class MainMenuUIController : MonoBehaviour
     {
         PlayerPrefs.SetString("SelectedCharacter", "Aegis");
         PlayerPrefs.Save();
+
+        Time.timeScale = 1f;
 
         if (loadSceneImmediatelyAfterCharacterSelect)
             SceneManager.LoadScene(aegisSceneName);
@@ -141,6 +247,8 @@ public class MainMenuUIController : MonoBehaviour
         PlayerPrefs.SetString("SelectedCharacter", "Null");
         PlayerPrefs.Save();
 
+        Time.timeScale = 1f;
+
         if (loadSceneImmediatelyAfterCharacterSelect)
             SceneManager.LoadScene(nullSceneName);
     }
@@ -148,9 +256,13 @@ public class MainMenuUIController : MonoBehaviour
     public void ResumeGame()
     {
         Time.timeScale = 1f;
+        HideCursor();
 
         if (pausePanel != null)
             pausePanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
 
         if (gameplayUIPanel != null)
             gameplayUIPanel.SetActive(true);
@@ -159,6 +271,7 @@ public class MainMenuUIController : MonoBehaviour
     public void OpenPauseMenu()
     {
         Time.timeScale = 0f;
+        ShowCursor();
 
         if (pausePanel != null)
             pausePanel.SetActive(true);
@@ -172,12 +285,16 @@ public class MainMenuUIController : MonoBehaviour
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
 
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
         previousPanel = pausePanel;
     }
 
     public void LoadMainMenuScene()
     {
         Time.timeScale = 1f;
+        ShowCursor();
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
@@ -192,21 +309,15 @@ public class MainMenuUIController : MonoBehaviour
 #endif
     }
 
-    void SetOnlyPanel(GameObject activePanel)
+    void ShowCursor()
     {
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(activePanel == mainMenuPanel);
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
 
-        if (chooseCharacterPanel != null)
-            chooseCharacterPanel.SetActive(activePanel == chooseCharacterPanel);
-
-        if (settingsPanel != null)
-            settingsPanel.SetActive(activePanel == settingsPanel);
-
-        if (pausePanel != null)
-            pausePanel.SetActive(activePanel == pausePanel);
-
-        if (dialoguePanel != null)
-            dialoguePanel.SetActive(false);
+    void HideCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 }
