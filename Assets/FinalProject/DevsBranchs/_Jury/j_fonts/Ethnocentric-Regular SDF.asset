@@ -2686,7 +2686,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Ethnocentric-Regular SDF Material
-  m_Shader: {fileID: 4800000, guid: ef32ce19e3d6bdf4784743670318b031, type: 3}
+  m_Shader: {fileID: 4800000, guid: 930853388a69d15469ae440bee6e12f4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
