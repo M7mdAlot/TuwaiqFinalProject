@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: faebf585b8e2fec42929b7f17578e9da
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Gore Chunks/M_VFX_URP_Gore_Flesh_Piece_Blue.mat
+  uploadId: 754455

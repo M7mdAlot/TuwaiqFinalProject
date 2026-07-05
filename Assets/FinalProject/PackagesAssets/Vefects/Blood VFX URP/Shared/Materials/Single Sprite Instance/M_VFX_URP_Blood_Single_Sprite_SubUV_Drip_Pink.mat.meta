@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c74e0129e9a5e2749b8dc3cf079422f3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Single Sprite Instance/M_VFX_URP_Blood_Single_Sprite_SubUV_Drip_Pink.mat
+  uploadId: 754455

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3d75cb5b9d9e718468063ccb0d198a1c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Mesh Erosion/M_VFX_URP_Mesh_Erosion_Blood_Orange.mat
+  uploadId: 754455

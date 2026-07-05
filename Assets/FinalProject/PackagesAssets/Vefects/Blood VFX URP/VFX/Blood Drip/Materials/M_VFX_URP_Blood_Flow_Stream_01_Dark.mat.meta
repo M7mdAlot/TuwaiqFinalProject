@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f1277dd6cf1183041bbd38274cd2a834
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Blood Drip/Materials/M_VFX_URP_Blood_Flow_Stream_01_Dark.mat
+  uploadId: 754455

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 35bd0eb5b116762469433f885e00d541
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Wound Decals/Materials/M_VFX_URP_Wound_Decal_Lit_Scrape_White.mat
+  uploadId: 754455

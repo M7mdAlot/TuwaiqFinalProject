@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a0c5b87a6c3ae94448a2e0e4cc2de9eb
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Decals/Materials/M_VFX_URP_Blood_Decal_Splatter_06_Orange.mat
+  uploadId: 754455

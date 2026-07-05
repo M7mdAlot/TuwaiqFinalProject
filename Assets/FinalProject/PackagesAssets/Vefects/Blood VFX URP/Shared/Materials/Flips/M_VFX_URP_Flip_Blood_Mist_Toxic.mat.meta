@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 776c285f87744fd4087f56d528f766a0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Flips/M_VFX_URP_Flip_Blood_Mist_Toxic.mat
+  uploadId: 754455

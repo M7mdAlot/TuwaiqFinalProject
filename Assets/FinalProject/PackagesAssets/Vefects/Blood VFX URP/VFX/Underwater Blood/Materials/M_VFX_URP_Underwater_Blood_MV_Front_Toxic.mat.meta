@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3af0d8add9ecf5141b277d26416582d3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Underwater Blood/Materials/M_VFX_URP_Underwater_Blood_MV_Front_Toxic.mat
+  uploadId: 754455

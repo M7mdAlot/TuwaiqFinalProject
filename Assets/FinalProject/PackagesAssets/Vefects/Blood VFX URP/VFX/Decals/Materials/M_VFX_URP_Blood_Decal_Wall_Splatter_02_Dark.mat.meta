@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c1bd6280cbe06d14b9e972795bf747d0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Decals/Materials/M_VFX_URP_Blood_Decal_Wall_Splatter_02_Dark.mat
+  uploadId: 754455

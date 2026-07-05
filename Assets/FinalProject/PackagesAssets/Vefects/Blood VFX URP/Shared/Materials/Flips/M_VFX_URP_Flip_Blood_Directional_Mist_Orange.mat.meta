@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c050c47b953a7d542a753f1d90b7a281
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Flips/M_VFX_URP_Flip_Blood_Directional_Mist_Orange.mat
+  uploadId: 754455

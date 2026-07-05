@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 0c206a2804fc3bf459e6bfc14420dcd6
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Blood Drip/Shaders/SH_Vefects_VFX_URP_Blood_Flow_01.shader
+  uploadId: 754455
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _LUT: {fileID: 2800000, guid: 70fa73508dccec944852d3eed97e2e2f, type: 3}
+  - _BloodTexture: {fileID: 2800000, guid: 2b2b83eb1f6f94a48876a72ef22c9d03, type: 3}
+  - _BloodTextureNormal: {fileID: 2800000, guid: d69ffd0533a6f524fb518ad7daac8b61, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

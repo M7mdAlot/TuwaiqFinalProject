@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 203ce68f3f1dcb245a4da67f8c052a56
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Single Sprite Instance/M_VFX_URP_Blood_Single_Sprite_Dir_Splatter_Large_Yellow.mat
+  uploadId: 754455

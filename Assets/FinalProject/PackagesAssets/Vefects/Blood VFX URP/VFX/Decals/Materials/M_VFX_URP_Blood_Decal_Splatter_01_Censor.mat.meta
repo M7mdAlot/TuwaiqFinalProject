@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d4392072777c8124a90bba1d9a2b59d3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Decals/Materials/M_VFX_URP_Blood_Decal_Splatter_01_Censor.mat
+  uploadId: 754455

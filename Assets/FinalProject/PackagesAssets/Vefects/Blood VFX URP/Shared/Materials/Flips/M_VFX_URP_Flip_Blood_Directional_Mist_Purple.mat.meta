@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4189e09eb9a763647b9b3ff44adea30b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Flips/M_VFX_URP_Flip_Blood_Directional_Mist_Purple.mat
+  uploadId: 754455

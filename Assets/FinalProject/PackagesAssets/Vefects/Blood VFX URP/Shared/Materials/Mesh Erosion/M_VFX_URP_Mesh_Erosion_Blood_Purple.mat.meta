@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e6cc393f4a6e5ae4281fb933ec4ce4bb
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Mesh Erosion/M_VFX_URP_Mesh_Erosion_Blood_Purple.mat
+  uploadId: 754455

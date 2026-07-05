@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: c79d12a1ca0d91540960a0fb81bf198c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Decals/Shaders/SH_Vefects_VFX_URP_Blood_Decal_01.shader
+  uploadId: 754455
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _HDRI: {fileID: 8900000, guid: 9ff1be94635d3064b8cdfa419fc7bf3f, type: 3}
+  - _DecalTexture: {fileID: 2800000, guid: f70ae51a1c0f7194084a9dd08553e1fd, type: 3}
+  - _LUT: {fileID: 2800000, guid: 70fa73508dccec944852d3eed97e2e2f, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

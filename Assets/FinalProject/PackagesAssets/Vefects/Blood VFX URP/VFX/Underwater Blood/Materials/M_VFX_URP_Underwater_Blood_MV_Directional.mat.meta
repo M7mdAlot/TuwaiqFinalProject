@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 641c3a97a6a79e84f8cd3013cd732209
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Underwater Blood/Materials/M_VFX_URP_Underwater_Blood_MV_Directional.mat
+  uploadId: 754455

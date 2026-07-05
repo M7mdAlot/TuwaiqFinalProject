@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 210262c74b2f48640bbfec3af9d896a1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Flips/M_VFX_URP_Flip_Blood_Mist_White.mat
+  uploadId: 754455

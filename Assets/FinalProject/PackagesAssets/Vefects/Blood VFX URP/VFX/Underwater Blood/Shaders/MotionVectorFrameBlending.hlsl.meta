@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 44655f03ba5dfca44a92110412bc10e5
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  preprocessorOverride: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Underwater Blood/Shaders/MotionVectorFrameBlending.hlsl
+  uploadId: 754455

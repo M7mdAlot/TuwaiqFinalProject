@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2775143fd11710f438bf6db9099a7e0c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Gore Chunks/M_VFX_URP_Gore_Skull_Piece_Purple.mat
+  uploadId: 754455

@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_VFX_URP_Blood_Puddle_Purple
+  m_Shader: {fileID: 4800000, guid: 99ded1ec8455c9b48a1b682184a1c996, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 2950
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _EdgeNormalTexture:
+        m_Texture: {fileID: 2800000, guid: 3d73384e032250147bde1c84d3e7264d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ErosionTexture:
+        m_Texture: {fileID: 2800000, guid: e1332f0611ef26c4fad2bdede2069bb2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HDRI:
+        m_Texture: {fileID: 8900000, guid: 9ff1be94635d3064b8cdfa419fc7bf3f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LUT:
+        m_Texture: {fileID: 2800000, guid: 02465bd9154f19a448b3732daebae3ae, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalTexture:
+        m_Texture: {fileID: 2800000, guid: cbd72c0a7f365c1489e20b65c67d8fde, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalTexture1:
+        m_Texture: {fileID: 2800000, guid: 3d56cd0f218784542b03532261b2caf5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaCutoff: 0.5
+    - _AlphaThreshold: 0
+    - _ColorEdgesSmoothnessOut: 0.3
+    - _Cull: 0
+    - _Dst: 10
+    - _EdgeNormalSmoothness: 0.1
+    - _Emissive: 0
+    - _EnvironmentReflections: 1
+    - _HDRIIntensity: 1
+    - _HDRIPower: 3
+    - _LUTOffset: 0
+    - _LUTScale: 1
+    - _NormalStrength: 1
+    - _OpacityBoost: 1
+    - _PuddleSize: 1
+    - _QueueControl: 0
+    - _QueueOffset: -50
+    - _ReceiveShadows: 1
+    - _Smoothness: 1
+    - _Specular: 0.001
+    - _SpecularHighlights: 1
+    - _Src: 5
+    - _ZTest: 8
+    - _ZWrite: 0
+    m_Colors:
+    - _Color01: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

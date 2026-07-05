@@ -1797,7 +1797,6 @@ MonoBehaviour:
   _muzzle: {fileID: 598063785}
   _startingWeapons:
   - {fileID: 11400000, guid: db0c84fcc1dbcc3478b8bc7f526d5eed, type: 2}
-  - {fileID: 11400000, guid: 0b93646f7172cea4197c9f8fec1ea3d4, type: 2}
   _playerSide: 0
 --- !u!114 &1738692216
 MonoBehaviour:

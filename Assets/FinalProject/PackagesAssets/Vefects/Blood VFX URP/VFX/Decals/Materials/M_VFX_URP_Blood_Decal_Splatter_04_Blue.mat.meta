@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5cecc37e55b17614aa1cf04e6c42b252
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Decals/Materials/M_VFX_URP_Blood_Decal_Splatter_04_Blue.mat
+  uploadId: 754455

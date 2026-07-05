@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 473135a1a654eb54f99e820f7ac8a867
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/Shared/Materials/Mesh Erosion/M_VFX_URP_Mesh_Erosion_Blood_Toxic.mat
+  uploadId: 754455

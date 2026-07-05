@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0dd1c7eea2d55404b9a8ef69d700af7a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Decals/Materials/M_VFX_URP_Blood_Decal_Hand_Splatter_Cyan.mat
+  uploadId: 754455

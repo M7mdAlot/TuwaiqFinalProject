@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: fb6ade9540e588b45a36700072302fc8
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265906
+  packageName: Blood VFX - URP
+  packageVersion: 1.0.0
+  assetPath: Assets/Vefects/Blood VFX URP/VFX/Underwater Blood/Shaders/SH_Vefects_VFX_URP_Underwater_Blood_MV_6way.shader
+  uploadId: 754455
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
