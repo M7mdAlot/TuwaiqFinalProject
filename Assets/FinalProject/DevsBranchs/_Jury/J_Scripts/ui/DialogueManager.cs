@@ -26,11 +26,22 @@ public class DialogueManager : MonoBehaviour
 
     private InputAction interactAction;
 
-    private string[] currentLines;
-    private string currentSpeaker;
+    private List<DialogueLine> currentLines = new List<DialogueLine>();
     private int currentIndex;
     private bool isDialogueOpen;
     private float nextInputAllowedTime;
+
+    private struct DialogueLine
+    {
+        public string speaker;
+        public string text;
+
+        public DialogueLine(string speaker, string text)
+        {
+            this.speaker = speaker;
+            this.text = text;
+        }
+    }
 
     void Awake()
     {
@@ -66,18 +77,56 @@ public class DialogueManager : MonoBehaviour
         if (lines == null || lines.Length == 0)
             return;
 
-        currentSpeaker = speakerName;
-        currentLines = lines;
-        currentIndex = 0;
+        currentLines.Clear();
 
+        foreach (string line in lines)
+            currentLines.Add(new DialogueLine(speakerName, line));
+
+        OpenDialogue();
+    }
+
+    public void StartDialogueLines(string[] rawLines)
+    {
+        if (rawLines == null || rawLines.Length == 0)
+            return;
+
+        currentLines.Clear();
+
+        foreach (string rawLine in rawLines)
+        {
+            DialogueLine parsedLine = ParseLine(rawLine);
+            currentLines.Add(parsedLine);
+        }
+
+        OpenDialogue();
+    }
+
+    DialogueLine ParseLine(string rawLine)
+    {
+        if (string.IsNullOrWhiteSpace(rawLine))
+            return new DialogueLine("", "");
+
+        int colonIndex = rawLine.IndexOf(':');
+
+        if (colonIndex > 0)
+        {
+            string speaker = rawLine.Substring(0, colonIndex).Trim();
+            string text = rawLine.Substring(colonIndex + 1).Trim();
+
+            return new DialogueLine(speaker, text);
+        }
+
+        return new DialogueLine("", rawLine.Trim());
+    }
+
+    void OpenDialogue()
+    {
+        currentIndex = 0;
         isDialogueOpen = true;
         nextInputAllowedTime = Time.time + startInputDelay;
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);
-
-        if (speakerNameText != null)
-            speakerNameText.text = currentSpeaker;
 
         if (continueText != null)
             continueText.text = "Press E to continue";
@@ -90,15 +139,22 @@ public class DialogueManager : MonoBehaviour
 
     void ShowCurrentLine()
     {
+        if (currentLines.Count == 0) return;
+
+        DialogueLine line = currentLines[currentIndex];
+
+        if (speakerNameText != null)
+            speakerNameText.text = line.speaker;
+
         if (dialogueBodyText != null)
-            dialogueBodyText.text = currentLines[currentIndex];
+            dialogueBodyText.text = line.text;
     }
 
     void ShowNextLine()
     {
         currentIndex++;
 
-        if (currentIndex >= currentLines.Length)
+        if (currentIndex >= currentLines.Count)
         {
             EndDialogue();
             return;
@@ -107,7 +163,7 @@ public class DialogueManager : MonoBehaviour
         ShowCurrentLine();
     }
 
-    void EndDialogue()
+    public void EndDialogue()
     {
         isDialogueOpen = false;
 
@@ -131,7 +187,7 @@ public class DialogueManager : MonoBehaviour
         return isDialogueOpen;
     }
 
-    // Compatibility methods for CampaignManager
+    // Compatibility methods for other scripts / CampaignManager
     public void SetDialogue(string speakerName, string[] lines)
     {
         StartDialogue(speakerName, lines);
@@ -139,7 +195,7 @@ public class DialogueManager : MonoBehaviour
 
     public void SetDialogue(string[] lines)
     {
-        StartDialogue("", lines);
+        StartDialogueLines(lines);
     }
 
     public void SetDialogue(string speakerName, string line)
@@ -149,12 +205,12 @@ public class DialogueManager : MonoBehaviour
 
     public void SetDialogue(string line)
     {
-        StartDialogue("", new string[] { line });
+        StartDialogueLines(new string[] { line });
     }
 
     public void SetDialogue(List<string> lines)
     {
-        StartDialogue("", lines.ToArray());
+        StartDialogueLines(lines.ToArray());
     }
 
     public void SetDialogue(string speakerName, List<string> lines)
