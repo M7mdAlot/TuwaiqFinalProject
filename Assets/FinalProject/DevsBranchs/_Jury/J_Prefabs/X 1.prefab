@@ -363,16 +363,25 @@ PrefabInstance:
       addedObject: {fileID: 7391755382097947119}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6372154416219329223}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8085721202932012960}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4529423569381827851}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 5240384954836254394}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8120823444343858744}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3400504089584122119}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5366388517839639793}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5548151445842158682}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4037192874469226790}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1278116760216306451}
   m_SourcePrefab: {fileID: 100100000, guid: 3bb59644b348cf2429e2d2579c0cebb4, type: 3}
 --- !u!1 &2919467017966048363 stripped
 GameObject:
@@ -391,7 +400,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
-  m_Actions: {fileID: -944628639613478452, guid: 7b15853506e7fc1419942becf7764eb6, type: 3}
+  m_Actions: {fileID: -944628639613478452, guid: 51528534f072a2349b5aef7aa1582225, type: 3}
   m_NotificationBehavior: 3
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -456,115 +465,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.011, z: 0}
---- !u!114 &6372154416219329223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2919467017966048363}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adcc19057736ab347a0d5a21ce6f040e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TinyToasterController
-  characterController: {fileID: 7391755382097947119}
-  playerInput: {fileID: 2575564651105907380}
-  animator: {fileID: 3978626714112333739}
-  cameraRoot: {fileID: 0}
-  moveActionName: Move
-  lookActionName: Look
-  sprintActionName: Sprint
-  jumpActionName: Jump
-  slideActionName: Slide
-  walkSpeed: 4
-  runSpeed: 7
-  jumpHeight: 1.5
-  gravity: -20
-  slideRequiresSprint: 1
-  slideRequiresGrounded: 0
-  slideSpeed: 10
-  slideDuration: 0.8
-  slideCooldown: 1
-  mouseSensitivity: 0.12
-  minLookAngle: -80
-  maxLookAngle: 80
-  moveXParam: MoveX
-  moveYParam: MoveY
-  speedParam: Speed
-  isMovingParam: IsMoving
-  isRunningParam: IsRunning
-  isJumpingParam: IsJumping
-  isSlidingParam: IsSliding
-  damageParam: Damage
-  isDeadParam: IsDead
-  animationSmoothTime: 0.1
-  jumpAnimationTime: 0.6
-  movementLocked: 0
---- !u!114 &8085721202932012960
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2919467017966048363}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a7e48bb103736c4888744af63d54a05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AegisWeaponController
-  playerInput: {fileID: 2575564651105907380}
-  playerCamera: {fileID: 0}
-  weaponObject: {fileID: 0}
-  movementController: {fileID: 6372154416219329223}
-  animator: {fileID: 0}
-  switchWeaponActionName: SwitchWeapon
-  aimActionName: Aim
-  fireActionName: Fire
-  reloadActionName: Reload
-  hasWeaponParam: HasWeapon
-  isAimingParam: IsAiming
-  fireSingleParam: FireSingle
-  fireAutoParam: FireAuto
-  reloadParam: Refill
-  requireWeaponToFire: 1
-  lockMovementWhileWeaponEquipped: 1
-  normalFOV: 60
-  aimFOV: 35
-  zoomSpeed: 12
-  firstShotCooldown: 0.12
-  autoFireRate: 0.12
-  autoStartDelay: 0.12
-  range: 100
-  damage: 10
-  blockInteractionWhileFiring: 1
-  blockInteractionWhileWeaponEquipped: 1
-  debugLogs: 1
---- !u!114 &4529423569381827851
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2919467017966048363}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b01a29049baa0c45b77219cb9d752c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::XPunchyHands
-  playerInput: {fileID: 2575564651105907380}
-  animator: {fileID: 3978626714112333739}
-  leftPunchActionName: LeftPunch
-  rightPunchActionName: RightPunch
-  heavyPunchActionName: HeavyPunch
-  kickActionName: Kick
-  leftPunchTrigger: LeftPunch
-  rightPunchTrigger: RightPunch
-  heavyPunchTrigger: HeavyPunch
-  kickTrigger: Kick
-  punchCooldown: 0.35
-  heavyCooldown: 0.8
-  kickCooldown: 0.7
 --- !u!114 &5240384954836254394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -578,3 +478,130 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCharacterIdentity
   playerType: 1
+--- !u!114 &-8120823444343858744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2919467017966048363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ecf1a921b4c6e4597dab6c70a9a8ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.InteractionController
+  _inputReader: {fileID: 11400000, guid: d863f7636d7a59646987c05b4807924d, type: 2}
+  _rayOrigin: {fileID: 0}
+  _range: 3
+  _mask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &3400504089584122119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2919467017966048363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a79224bb98b25c458b2ca3286153ac8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.InteractionDebugHud
+  _interaction: {fileID: 0}
+  _fontSize: 22
+  _color: {r: 1, g: 1, b: 1, a: 1}
+  _bottomMargin: 80
+  _barSize: {x: 220, y: 8}
+  _barFillColor: {r: 1, g: 0.9, b: 0.2, a: 0.9}
+  _barBackColor: {r: 0, g: 0, b: 0, a: 0.6}
+--- !u!114 &-5366388517839639793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2919467017966048363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9e308794944098409eb2a8fc1088977, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.WeaponHandler
+  _inputReader: {fileID: 11400000, guid: d863f7636d7a59646987c05b4807924d, type: 2}
+  _muzzle: {fileID: 0}
+  _startingWeapons: []
+  _playerSide: 0
+--- !u!114 &5548151445842158682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2919467017966048363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6e110711cef70b4792d892f8cd4d063, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.MovementController
+  _inputReader: {fileID: 11400000, guid: d863f7636d7a59646987c05b4807924d, type: 2}
+  _walkSpeed: 5
+  _sprintSpeed: 8
+  _slideSpeed: 11
+  _slideDuration: 0.6
+  _slideCooldown: 0.8
+  _jumpHeight: 1.5
+  _gravity: -20
+--- !u!114 &4037192874469226790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2919467017966048363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5859e6f745b9844498a90350735071a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.PlayerAnimatorBridge
+  _animator: {fileID: 0}
+  _inputReader: {fileID: 11400000, guid: d863f7636d7a59646987c05b4807924d, type: 2}
+  _movement: {fileID: 0}
+  _health: {fileID: 0}
+  _weapons: {fileID: 0}
+  _moveXParam: MoveX
+  _moveYParam: MoveY
+  _speedParam: Speed
+  _isMovingParam: IsMoving
+  _isRunningParam: IsRunning
+  _isJumpingParam: IsJumping
+  _isSlidingParam: IsSliding
+  _smoothTime: 0.1
+  _jumpAnimTime: 0.6
+  _isAimingParam: IsAiming
+  _fireSingleParam: FireSingle
+  _fireAutoParam: FireAuto
+  _reloadParam: Refill
+  _damageParam: Damage
+  _isDeadParam: IsDead
+  _interactParam: Interact
+  _hasWeaponParam: HasWeapon
+  _summonWeaponParam: SummonWeapon
+  _closeWeaponParam: CloseWeapon
+  _leftPunchParam: LeftPunch
+  _rightPunchParam: RightPunch
+--- !u!114 &-1278116760216306451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2919467017966048363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c75ca36baf4a494d97afae5d6c4b8d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.HealthSystem
+  _maxHealth: 100
+  _hurtSfx: {fileID: 0}
+  _deathSfx: {fileID: 0}
+  _healthNormalizedChannel: {fileID: 0}

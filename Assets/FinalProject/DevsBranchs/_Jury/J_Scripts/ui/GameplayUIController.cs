@@ -1,7 +1,12 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Aegis.Systems;
 
+// Bridges Jury's own health/ammo events into Mohammed's persistent Aegis.Systems.UIManager
+// (a DontDestroyOnLoad singleton), so the same HUD keeps working no matter which scene the
+// player ends up in. The local fields below still work as a fallback if UIManager.Instance
+// isn't loaded yet in whatever scene this is sitting in.
 public class GameplayUIController : MonoBehaviour
 {
     [Header("Main HUD (hidden during dialogue)")]
@@ -43,22 +48,34 @@ public class GameplayUIController : MonoBehaviour
     // Wire to SimpleHealth.onHealthChanged in the Inspector.
     public void RefreshHealth()
     {
-        if (playerHealth == null || healthFillImage == null) return;
+        if (playerHealth == null) return;
 
         float pct = playerHealth.maxHealth > 0
             ? (float)playerHealth.currentHealth / playerHealth.maxHealth
             : 0f;
 
-        healthFillImage.fillAmount = pct;
+        if (UIManager.Instance != null)
+            UIManager.Instance.SetHealthNormalized(pct);
+
+        if (healthFillImage != null)
+            healthFillImage.fillAmount = pct;
     }
 
     // Wire to AegisWeaponController.onAmmoChanged in the Inspector.
     public void RefreshAmmo()
     {
-        if (weaponController == null || ammoText == null) return;
+        if (weaponController == null) return;
 
-        ammoText.text = weaponController.CurrentAmmo + " / " + weaponController.MagazineSize;
+        if (UIManager.Instance != null)
+            UIManager.Instance.SetAmmo(weaponController.CurrentAmmo, weaponController.MagazineSize);
+
+        if (ammoText != null)
+            ammoText.text = weaponController.CurrentAmmo + " / " + weaponController.MagazineSize;
     }
+
+    // NOTE: if this scene also uses Mohammed's CrisisManager, that system already drives
+    // UIManager.SetCrisisTimer/HideCrisisTimer end-to-end — don't wire both to the same event
+    // or the timer text will fight itself. Only use these two if you're NOT using CrisisManager.
 
     // Wire to AegisStoryManager.onBombRunStarted in the Inspector.
     public void ShowTimer()
@@ -72,5 +89,8 @@ public class GameplayUIController : MonoBehaviour
     {
         if (timerPanel != null)
             timerPanel.SetActive(false);
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.HideCrisisTimer();
     }
 }

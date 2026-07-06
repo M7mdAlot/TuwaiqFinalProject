@@ -119,11 +119,29 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &101265872 stripped
+--- !u!1 &123805981 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 981436116626768570, guid: 56b1e79d47220064d9e5bf06cbd684a6, type: 3}
+  m_CorrespondingSourceObject: {fileID: 8960725280766528552, guid: 56b1e79d47220064d9e5bf06cbd684a6, type: 3}
   m_PrefabInstance: {fileID: 2520950330324157925}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &123805986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123805981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fec4268a61c4581498a52cf055510e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameplayUIController
+  gameplayUIPanel: {fileID: 0}
+  playerHealth: {fileID: 0}
+  healthFillImage: {fileID: 0}
+  weaponController: {fileID: 0}
+  ammoText: {fileID: 0}
+  timerPanel: {fileID: 0}
 --- !u!1 &139893210
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,44 +762,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 473485956}
   m_CullTransparentMesh: 1
---- !u!95 &755789692 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6451749105931891082, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-  m_PrefabInstance: {fileID: 5946592126926873203}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &755789695 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8222145262262401777, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-  m_PrefabInstance: {fileID: 5946592126926873203}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a7e48bb103736c4888744af63d54a05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AegisWeaponController
---- !u!114 &755789696 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4758111658680944056, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-  m_PrefabInstance: {fileID: 5946592126926873203}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adcc19057736ab347a0d5a21ce6f040e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TinyToasterController
---- !u!114 &755789698 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4554726902400626960, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-  m_PrefabInstance: {fileID: 5946592126926873203}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
 --- !u!4 &1055603788 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2580517937914154705, guid: 75f70c9eef16c074d8358586211785fb, type: 3}
@@ -2735,7 +2715,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8960725280766528552, guid: 56b1e79d47220064d9e5bf06cbd684a6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 123805986}
   m_SourcePrefab: {fileID: 100100000, guid: 56b1e79d47220064d9e5bf06cbd684a6, type: 3}
 --- !u!1001 &3247292160767876761
 PrefabInstance:
@@ -2911,14 +2894,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: X
       objectReference: {fileID: 0}
-    - target: {fileID: 6372154416219329223, guid: 75f70c9eef16c074d8358586211785fb, type: 3}
-      propertyPath: cameraRoot
-      value: 
-      objectReference: {fileID: 1885267781}
-    - target: {fileID: 8085721202932012960, guid: 75f70c9eef16c074d8358586211785fb, type: 3}
-      propertyPath: playerCamera
-      value: 
-      objectReference: {fileID: 1885267780}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2972,34 +2947,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: animator
-      value: 
-      objectReference: {fileID: 755789692}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: playerInput
-      value: 
-      objectReference: {fileID: 755789698}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: loadFillRect
-      value: 
-      objectReference: {fileID: 250228866}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: playerCamera
-      value: 
-      objectReference: {fileID: 1885267780}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: weaponController
-      value: 
-      objectReference: {fileID: 755789695}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: interactPromptRoot
-      value: 
-      objectReference: {fileID: 101265872}
-    - target: {fileID: 2553252114160998357, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: interactPromptText
-      value: 
-      objectReference: {fileID: 1883511045}
     - target: {fileID: 3160144496496461071, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
       propertyPath: m_Name
       value: Aegis
@@ -3012,30 +2959,6 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 4758111658680944056, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: cameraRoot
-      value: 
-      objectReference: {fileID: 1885267781}
-    - target: {fileID: 8222145262262401777, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: animator
-      value: 
-      objectReference: {fileID: 755789692}
-    - target: {fileID: 8222145262262401777, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: playerInput
-      value: 
-      objectReference: {fileID: 755789698}
-    - target: {fileID: 8222145262262401777, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: playerCamera
-      value: 
-      objectReference: {fileID: 1885267780}
-    - target: {fileID: 8222145262262401777, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: weaponObject
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8222145262262401777, guid: d3f11dd427a40214986081322c27f0fd, type: 3}
-      propertyPath: movementController
-      value: 
-      objectReference: {fileID: 755789696}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
