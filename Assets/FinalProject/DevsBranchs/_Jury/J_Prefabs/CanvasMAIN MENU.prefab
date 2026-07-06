@@ -334,8 +334,8 @@ MonoBehaviour:
   resumeButton: {fileID: 0}
   pauseSettingsButton: {fileID: 0}
   pauseMainMenuButton: {fileID: 0}
-  aegisSceneName: AegisScene
-  nullSceneName: NullScene
+  aegisSceneName: Aegis scene
+  nullSceneName: X scene
   mainMenuSceneName: MAIN MENU
   loadSceneImmediatelyAfterCharacterSelect: 1
 --- !u!114 &3896527637758623080

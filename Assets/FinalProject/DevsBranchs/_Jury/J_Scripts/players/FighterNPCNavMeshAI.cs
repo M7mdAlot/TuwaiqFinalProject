@@ -72,6 +72,9 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
     public string singleShootAnimationStateName = "single shot rifle";
     public float shootAnimationFadeTime = 0.03f;
 
+    [Header("Effects")]
+    public GameObject bulletParticlePrefab;
+
     private FighterState state = FighterState.Patrol;
     private Transform target;
 
@@ -465,6 +468,9 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
 
         Vector3 targetPosition = target.position + Vector3.up * 1.2f;
         Vector3 direction = (targetPosition - origin).normalized;
+
+        if (bulletParticlePrefab != null)
+            Instantiate(bulletParticlePrefab, origin, Quaternion.LookRotation(direction));
 
         bool damagedPlayer = false;
 
