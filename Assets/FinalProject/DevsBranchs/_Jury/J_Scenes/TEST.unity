@@ -1157,6 +1157,12 @@ MonoBehaviour:
   damage: 10
   blockInteractionWhileFiring: 1
   blockInteractionWhileWeaponEquipped: 1
+  magazineSize: 30
+  reloadStateName: refill
+  reloadDuration: 5
+  onAmmoChanged:
+    m_PersistentCalls:
+      m_Calls: []
   debugLogs: 1
 --- !u!114 &1124118533
 MonoBehaviour:
@@ -2612,6 +2618,10 @@ PrefabInstance:
     - target: {fileID: 9133390006721263171, guid: 1b6898afcf4090a4caf89e5d46bfba63, type: 3}
       propertyPath: m_Name
       value: solider
+      objectReference: {fileID: 0}
+    - target: {fileID: 9133390006721263171, guid: 1b6898afcf4090a4caf89e5d46bfba63, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

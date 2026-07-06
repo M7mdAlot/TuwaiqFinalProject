@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 public class AegisWeaponController : MonoBehaviour
 {
@@ -43,11 +44,20 @@ public class AegisWeaponController : MonoBehaviour
     public bool blockInteractionWhileFiring = true;
     public bool blockInteractionWhileWeaponEquipped = false;
 
+    [Header("Ammo")]
+    public int magazineSize = 30;
+    public string reloadStateName = "refill";
+    public float reloadDuration = 5f; // safety fallback only, see IsReloadAnimationDone
+    public UnityEvent onAmmoChanged;
+
     [Header("Debug")]
     public bool debugLogs = true;
 
     public bool HasWeapon => hasWeapon;
     public bool IsFiring => hasWeapon && fireAction != null && fireAction.IsPressed();
+    public int CurrentAmmo => currentAmmo;
+    public int MagazineSize => magazineSize;
+    public bool IsReloading => isReloading;
 
     public bool BlocksInteraction
     {
@@ -74,6 +84,11 @@ public class AegisWeaponController : MonoBehaviour
 
     private float firePressedTime;
     private float nextShotTime;
+
+    private int currentAmmo;
+    private bool isReloading;
+    private bool hasEnteredReloadState;
+    private float reloadEndTime;
 
     void Awake()
     {
@@ -111,6 +126,9 @@ public class AegisWeaponController : MonoBehaviour
     {
         ForceCloseWeapon();
 
+        currentAmmo = magazineSize;
+        onAmmoChanged?.Invoke();
+
         if (playerCamera != null)
             playerCamera.fieldOfView = normalFOV;
     }
@@ -121,6 +139,7 @@ public class AegisWeaponController : MonoBehaviour
         HandleZoomAndAim();
         HandleFire();
         HandleReload();
+        UpdateReloadState();
     }
 
     void HandleSwitchWeapon()
@@ -209,6 +228,13 @@ public class AegisWeaponController : MonoBehaviour
             return;
         }
 
+        if (isReloading || currentAmmo <= 0)
+        {
+            StopFiringAnimation();
+            wasFirePressed = false;
+            return;
+        }
+
         bool firePressed = fireAction.IsPressed();
 
         // First click / first frame
@@ -245,10 +271,13 @@ public class AegisWeaponController : MonoBehaviour
                     nextShotTime = Time.time;
                 }
 
-                if (Time.time >= nextShotTime)
+                if (Time.time >= nextShotTime && currentAmmo > 0)
                 {
                     ShootRaycast();
                     nextShotTime = Time.time + autoFireRate;
+
+                    if (currentAmmo <= 0)
+                        StopFiringAnimation();
                 }
             }
         }
@@ -272,10 +301,16 @@ public class AegisWeaponController : MonoBehaviour
     {
         if (reloadAction == null) return;
         if (requireWeaponToFire && !hasWeapon) return;
+        if (isReloading) return;
+        if (currentAmmo >= magazineSize) return;
 
         if (reloadAction.WasPressedThisFrame())
         {
             StopFiringAnimation();
+
+            isReloading = true;
+            hasEnteredReloadState = false;
+            reloadEndTime = Time.time + reloadDuration;
 
             if (animator != null)
                 animator.SetTrigger(reloadParam);
@@ -284,8 +319,43 @@ public class AegisWeaponController : MonoBehaviour
         }
     }
 
+    void UpdateReloadState()
+    {
+        if (!isReloading) return;
+
+        if (IsReloadAnimationDone() || Time.time >= reloadEndTime)
+        {
+            isReloading = false;
+            currentAmmo = magazineSize;
+            onAmmoChanged?.Invoke();
+        }
+    }
+
+    bool IsReloadAnimationDone()
+    {
+        if (animator == null || string.IsNullOrEmpty(reloadStateName))
+            return true;
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+        if (!hasEnteredReloadState)
+        {
+            // Wait for the trigger to actually take effect before watching for it to end,
+            // otherwise we'd read the previous (still-active) state and think it's "done" instantly.
+            if (stateInfo.IsName(reloadStateName))
+                hasEnteredReloadState = true;
+
+            return false;
+        }
+
+        return !stateInfo.IsName(reloadStateName);
+    }
+
     void ShootRaycast()
     {
+        currentAmmo = Mathf.Max(0, currentAmmo - 1);
+        onAmmoChanged?.Invoke();
+
         if (playerCamera == null)
         {
             Debug.LogWarning("AegisWeaponController: No camera assigned.");
