@@ -130,6 +130,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8933303463272240012}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7121011946268636163}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6470438021074566692}
   m_SourcePrefab: {fileID: 100100000, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
 --- !u!1 &3160144496496461071 stripped
 GameObject:
@@ -353,3 +359,34 @@ MonoBehaviour:
   _muzzle: {fileID: 0}
   _startingWeapons: []
   _playerSide: 0
+--- !u!114 &7121011946268636163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3160144496496461071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 472a0ebd82d958146aab729bce7bb0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.FirstPersonCamera
+  _inputReader: {fileID: 11400000, guid: d863f7636d7a59646987c05b4807924d, type: 2}
+  _cameraTransform: {fileID: 0}
+  _lookSensitivity: 0.1
+  _minPitch: -85
+  _maxPitch: 85
+  _invertY: 0
+  _lockCursor: 1
+--- !u!114 &6470438021074566692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3160144496496461071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 844da86bcbee8674aa3bc16a9743dd45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.PlayerController

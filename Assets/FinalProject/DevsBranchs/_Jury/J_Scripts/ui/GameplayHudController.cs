@@ -7,7 +7,7 @@ using Aegis.Systems;
 // (a DontDestroyOnLoad singleton), so the same HUD keeps working no matter which scene the
 // player ends up in. The local fields below still work as a fallback if UIManager.Instance
 // isn't loaded yet in whatever scene this is sitting in.
-public class GameplayUIController : MonoBehaviour
+public class GameplayHudController : MonoBehaviour
 {
     [Header("Main HUD (hidden during dialogue)")]
     public GameObject gameplayUIPanel;
