@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Playables;
+using UnityEngine.Video;
 using Aegis.Player;
 
 // X campaign ending manager. Mirrors AegisEndingManager but locks the NEW player
@@ -15,13 +15,13 @@ public class XEndingManager : MonoBehaviour
     public GameObject pausePanel;
     public GameObject settingsPanel;
 
-    [Header("Good Ending Cutscene")]
+    [Header("Good Ending Video")]
     public GameObject goodEndingCutsceneObject;
-    public PlayableDirector goodEndingTimeline;
+    public VideoPlayer goodEndingVideo;
 
-    [Header("Bad Ending Cutscene")]
+    [Header("Bad Ending Video")]
     public GameObject badEndingCutsceneObject;
-    public PlayableDirector badEndingTimeline;
+    public VideoPlayer badEndingVideo;
 
     [Header("Player (X)")]
     public GameObject xPlayer;
@@ -89,10 +89,10 @@ public class XEndingManager : MonoBehaviour
         if (goodEndingCutsceneObject != null)
             goodEndingCutsceneObject.SetActive(true);
 
-        if (goodEndingTimeline != null)
-            goodEndingTimeline.Play();
+        if (goodEndingVideo != null)
+            goodEndingVideo.Play();
 
-        Debug.Log("X GOOD ENDING CUTSCENE");
+        Debug.Log("X GOOD ENDING VIDEO");
     }
 
     public void PlayBadEnding()
@@ -114,10 +114,10 @@ public class XEndingManager : MonoBehaviour
         if (badEndingCutsceneObject != null)
             badEndingCutsceneObject.SetActive(true);
 
-        if (badEndingTimeline != null)
-            badEndingTimeline.Play();
+        if (badEndingVideo != null)
+            badEndingVideo.Play();
 
-        Debug.Log("X BAD ENDING CUTSCENE");
+        Debug.Log("X BAD ENDING VIDEO");
     }
 
     void DisablePlayerControl()
