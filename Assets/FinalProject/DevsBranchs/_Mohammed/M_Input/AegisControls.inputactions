@@ -55,7 +55,7 @@
                     "name": "Fire",
                     "type": "Button",
                     "id": "f1a2b3c4-d5e6-4789-9abc-000000000007",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -94,13 +94,22 @@
                     "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Melee",
                     "type": "Button",
                     "id": "f1a2b3c4-d5e6-4789-9abc-000000000050",
                     "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "26bcf1e2-6d1c-4066-b7a5-e2130a4c075b",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -412,6 +421,17 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Melee",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e3bab4c5-e8be-4420-941a-4b75d3a205f0",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

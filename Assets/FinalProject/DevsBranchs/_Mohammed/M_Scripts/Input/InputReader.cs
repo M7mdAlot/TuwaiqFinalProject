@@ -129,8 +129,15 @@ namespace Aegis.Input
         /// <summary>Enable gameplay input (call when entering the campaign / play state).</summary>
         public void EnableGameplay() => _actions?.FindActionMap(GameplayMapName)?.Enable();
 
-        /// <summary>Disable gameplay input (call for menus, cutscenes, pause).</summary>
-        public void DisableGameplay() => _actions?.FindActionMap(GameplayMapName)?.Disable();
+        /// <summary>Disable gameplay input (call for menus, cutscenes, pause) and zero current values.</summary>
+        public void DisableGameplay()
+        {
+            _actions?.FindActionMap(GameplayMapName)?.Disable();
+            MoveInput = Vector2.zero;
+            LookInput = Vector2.zero;
+            IsSprinting = false;
+            IsFiring = false;
+        }
 
         private void OnMove(InputAction.CallbackContext ctx) => MoveInput = ctx.ReadValue<Vector2>();
         private void OnLook(InputAction.CallbackContext ctx) => LookInput = ctx.ReadValue<Vector2>();

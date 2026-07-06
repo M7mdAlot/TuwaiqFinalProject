@@ -142,7 +142,7 @@ MonoBehaviour:
   fieldOfView: 120
   playerLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 8
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 4294967295

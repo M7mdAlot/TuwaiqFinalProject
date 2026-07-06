@@ -6,27 +6,26 @@ using Aegis.Systems;
 namespace Aegis.Player
 {
     /// <summary>
-    /// The bridge between live gameplay and the real HUD. It listens to the player's
-    /// <see cref="WeaponHandler"/> and <see cref="InteractionController"/> and pushes their
-    /// values into the <see cref="UIManager"/> (ammo, weapon name, interact prompt).
+    /// Bridges live gameplay to the HUD. Pushes ammo + weapon name (from WeaponHandler), the
+    /// interact prompt (from InteractionController), and flashes the damage overlay (from
+    /// HealthSystem) into the <see cref="UIManager"/>.
     ///
-    /// Health, objective banner and crisis timer are already driven elsewhere:
-    ///   • Health → HealthSystem raises the Float event channel that UIManager listens to.
-    ///   • Objective + crisis timer → CrisisManager calls UIManager directly.
-    /// So this binder just fills the remaining gaps.
-    /// Tier 5 — depends on Tier 2 (WeaponHandler) + Tier 1 (InteractionController, UIManager).
+    /// Health bar, objective banner and crisis timer are driven elsewhere (HealthSystem's
+    /// event channel and CrisisManager). This binder fills the rest.
+    /// Tier 5.
     /// </summary>
     public class HudBinder : MonoBehaviour
     {
         [Tooltip("Leave empty to auto-find on this/parent object.")]
         [SerializeField] private WeaponHandler _weapons;
-        [Tooltip("Leave empty to auto-find on this/parent object.")]
         [SerializeField] private InteractionController _interaction;
+        [SerializeField] private HealthSystem _health;
 
         private void Awake()
         {
             if (_weapons == null) _weapons = GetComponentInParent<WeaponHandler>();
             if (_interaction == null) _interaction = GetComponentInParent<InteractionController>();
+            if (_health == null) _health = GetComponentInParent<HealthSystem>();
         }
 
         private void OnEnable()
@@ -39,8 +38,8 @@ namespace Aegis.Player
                 OnWeaponChanged(_weapons.CurrentWeapon); // push initial values
             }
 
-            if (_interaction != null)
-                _interaction.TargetChanged += OnTargetChanged;
+            if (_interaction != null) _interaction.TargetChanged += OnTargetChanged;
+            if (_health != null) _health.DamageTaken += OnDamage;
         }
 
         private void OnDisable()
@@ -52,8 +51,8 @@ namespace Aegis.Player
                 _weapons.WeaponFired -= OnWeaponChanged;
             }
 
-            if (_interaction != null)
-                _interaction.TargetChanged -= OnTargetChanged;
+            if (_interaction != null) _interaction.TargetChanged -= OnTargetChanged;
+            if (_health != null) _health.DamageTaken -= OnDamage;
         }
 
         private void OnWeaponChanged(Weapon weapon)
@@ -81,6 +80,15 @@ namespace Aegis.Player
                 ui.HideInteractPrompt();
             else
                 ui.ShowInteractPrompt(target.Prompt);
+        }
+
+        private void OnDamage(float amount)
+        {
+            UIManager ui = UIManager.Instance;
+            if (ui == null) return;
+
+            // Scale the flash a bit by hit size (25 dmg = full flash).
+            ui.FlashDamage(Mathf.Clamp01(amount / 25f));
         }
     }
 }
