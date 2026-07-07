@@ -296,6 +296,10 @@ PrefabInstance:
       propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3429494856763841947, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
+      propertyPath: _sfxVolume
+      value: 0.768
+      objectReference: {fileID: 0}
     - target: {fileID: 6201543101164065763, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 80.427376
@@ -347,6 +351,10 @@ PrefabInstance:
     - target: {fileID: 6756857678243160446, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.565
+      objectReference: {fileID: 0}
+    - target: {fileID: 8155823851255153590, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -504,63 +512,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b54aecf41f86ceb4bbbf0ab333bc55e4, type: 3}
---- !u!1001 &1647851098
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 118.09802
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 52.75
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -65.56258
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5942568349435537387, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6427743607413144913, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
-      propertyPath: m_Name
-      value: solider
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
 --- !u!114 &1866579864 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8759635252306239777, guid: 44cd5a97e16759d438ba0d5bf638bfe1, type: 3}
@@ -778,6 +729,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1258594384}
   m_SourcePrefab: {fileID: 100100000, guid: 5b42f9401cee6dd42b56b22202e5ef3f, type: 3}
+--- !u!114 &1996803872 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4863730613503308116, guid: 048ae95f372cd97448a61c31f6fede89, type: 3}
+  m_PrefabInstance: {fileID: 1955491312804002678}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c75ca36baf4a494d97afae5d6c4b8d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.HealthSystem
 --- !u!1001 &1955491312804002678
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -786,6 +748,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4863730613503308116, guid: 048ae95f372cd97448a61c31f6fede89, type: 3}
+      propertyPath: _maxHealth
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5016108437593809068, guid: 048ae95f372cd97448a61c31f6fede89, type: 3}
       propertyPath: m_LocalPosition.x
       value: 170.65935
@@ -830,6 +796,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: SoldierMohammed
       objectReference: {fileID: 0}
+    - target: {fileID: 6909225109105126715, guid: 048ae95f372cd97448a61c31f6fede89, type: 3}
+      propertyPath: health
+      value: 
+      objectReference: {fileID: 1996803872}
+    - target: {fileID: 6909225109105126715, guid: 048ae95f372cd97448a61c31f6fede89, type: 3}
+      propertyPath: deathAnimationStateName
+      value: death
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -845,5 +819,4 @@ SceneRoots:
   - {fileID: 1640454930}
   - {fileID: 277332720}
   - {fileID: 1977493688}
-  - {fileID: 1647851098}
   - {fileID: 1955491312804002678}

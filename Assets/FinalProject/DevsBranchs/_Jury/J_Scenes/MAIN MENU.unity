@@ -2166,7 +2166,7 @@ PrefabInstance:
       objectReference: {fileID: 1998426307}
     - target: {fileID: 5303530158318355412, guid: 4b54559f5fe91a34c974cec9416ac1cd, type: 3}
       propertyPath: nullSceneName
-      value: X scene
+      value: M_XScene2F
       objectReference: {fileID: 0}
     - target: {fileID: 5303530158318355412, guid: 4b54559f5fe91a34c974cec9416ac1cd, type: 3}
       propertyPath: settingsPanel
