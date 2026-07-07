@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Aegis.Core;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class ScientistNPCNavMeshAI : MonoBehaviour
+public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 {
     public enum ScientistState
     {
@@ -35,6 +36,8 @@ public class ScientistNPCNavMeshAI : MonoBehaviour
 
     [Header("Animator Parameters")]
     public string speedParam = "Speed";
+    public string moveXParam = "MoveX";
+    public string moveYParam = "MoveY";
     public string isMovingParam = "IsMoving";
     public string isRunningParam = "IsRunning";
     public string isScaredParam = "IsScared";
@@ -283,13 +286,26 @@ public class ScientistNPCNavMeshAI : MonoBehaviour
         if (animator == null) return;
 
         float currentSpeed = agent.velocity.magnitude;
+        Vector3 localVelocity = transform.InverseTransformDirection(agent.velocity);
+        float normalizeBy = Mathf.Max(agent.speed, 0.01f);
 
         bool isMoving = currentSpeed > 0.1f;
         bool isRunning = state == ScientistState.Flee || currentSpeed > 3.2f;
 
         SetFloat(speedParam, currentSpeed);
+        SetFloat(moveXParam, localVelocity.x / normalizeBy);
+        SetFloat(moveYParam, localVelocity.z / normalizeBy);
         SetBool(isMovingParam, isMoving);
         SetBool(isRunningParam, isRunning);
+    }
+
+    // Bridge only: no numeric health exists yet for this NPC (it only flees on
+    // hit). Real health/death-on-damage is a separate feature decision.
+    public bool IsAlive => state != ScientistState.Dead;
+
+    void IDamageable.TakeDamage(float amount)
+    {
+        TakeHit();
     }
 
     public void TakeHit()

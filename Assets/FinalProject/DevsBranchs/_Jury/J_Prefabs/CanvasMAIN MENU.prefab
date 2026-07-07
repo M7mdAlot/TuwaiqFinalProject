@@ -213,6 +213,8 @@ GameObject:
   - component: {fileID: 2646637620795491414}
   - component: {fileID: 5920798160769903627}
   - component: {fileID: 5063499117188764916}
+  - component: {fileID: 5303530158318355412}
+  - component: {fileID: 3896527637758623080}
   m_Layer: 5
   m_Name: CanvasMAIN MENU
   m_TagString: Untagged
@@ -303,6 +305,67 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &5303530158318355412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3145869711453231010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c16dc138c90d02478d7495f8af57589, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuUIController
+  mainMenuPanel: {fileID: 0}
+  chooseCharacterPanel: {fileID: 0}
+  settingsPanel: {fileID: 0}
+  pausePanel: {fileID: 0}
+  dialoguePanel: {fileID: 0}
+  gameplayUIPanel: {fileID: 0}
+  playButton: {fileID: 0}
+  settingsButton: {fileID: 0}
+  quitButton: {fileID: 0}
+  aegisButton: {fileID: 0}
+  nullButton: {fileID: 0}
+  cancelCharacterButton: {fileID: 0}
+  closeCharacterButton: {fileID: 0}
+  settingsBackButton: {fileID: 0}
+  resumeButton: {fileID: 0}
+  pauseSettingsButton: {fileID: 0}
+  pauseMainMenuButton: {fileID: 0}
+  aegisSceneName: Aegis scene
+  nullSceneName: X scene
+  mainMenuSceneName: MAIN MENU
+  loadSceneImmediatelyAfterCharacterSelect: 1
+--- !u!114 &3896527637758623080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3145869711453231010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b7470406072d0c4d99b4199cb42c756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Systems.UIManager
+  _persistAcrossScenes: 1
+  _healthFill: {fileID: 0}
+  _healthSlider: {fileID: 0}
+  _healthText: {fileID: 0}
+  _healthChannel: {fileID: 0}
+  _ammoText: {fileID: 0}
+  _weaponNameText: {fileID: 0}
+  _interactPrompt: {fileID: 0}
+  _interactPromptText: {fileID: 0}
+  _objectiveUI: {fileID: 0}
+  _objectiveBanner: {fileID: 0}
+  _objectiveText: {fileID: 0}
+  _crisisTimer: {fileID: 0}
+  _crisisTimerText: {fileID: 0}
+  _crisisFill: {fileID: 0}
+  _crosshair: {fileID: 0}
 --- !u!1 &3815538313064240572
 GameObject:
   m_ObjectHideFlags: 0

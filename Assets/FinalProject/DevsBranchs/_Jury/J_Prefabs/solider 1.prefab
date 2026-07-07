@@ -158,7 +158,12 @@ MonoBehaviour:
   damageTargetEvenIfRayMisses: 1
   useAutoFire: 1
   bulletsPerSecond: 8
+  continuousFireDuration: 5
+  reloadStateName: refill
+  reloadDuration: 5
   speedParam: Speed
+  moveXParam: MoveX
+  moveYParam: MoveY
   isMovingParam: IsMoving
   isRunningParam: IsRunning
   isAimingParam: IsAiming
@@ -168,8 +173,10 @@ MonoBehaviour:
   summonWeaponParam: SummonWeapon
   shootTriggerParam: FireSingle
   shootingBoolParam: FireAuto
+  reloadParam: Refill
   forceWeaponAtStart: 1
   forcePlayShootAnimation: 1
   autoShootAnimationStateName: multiple shots rifle
   singleShootAnimationStateName: single shot rifle
   shootAnimationFadeTime: 0.03
+  bulletParticlePrefab: {fileID: 853484174402684912, guid: c7beda95bc94fa040a68120a9cd040ea, type: 3}

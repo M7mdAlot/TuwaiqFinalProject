@@ -1,7 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Playables;
+using UnityEngine.Video;
+using Aegis.Player;
 
+// Aegis campaign ending manager. Endings are VIDEOS (VideoPlayer), not Timelines.
+// Locks the current player (Mohammed's MovementController / WeaponHandler that Aegis
+// uses now). Call PlayGoodEnding/PlayBadEnding from CrisisManager's
+// OnCrisisSucceeded / OnCrisisFailed events (defuse in time = good ending).
 public class AegisEndingManager : MonoBehaviour
 {
     [Header("UI Panels")]
@@ -10,18 +15,18 @@ public class AegisEndingManager : MonoBehaviour
     public GameObject pausePanel;
     public GameObject settingsPanel;
 
-    [Header("Good Ending Cutscene")]
+    [Header("Good Ending Video")]
     public GameObject goodEndingCutsceneObject;
-    public PlayableDirector goodEndingTimeline;
+    public VideoPlayer goodEndingVideo;
 
-    [Header("Bad Ending Cutscene")]
+    [Header("Bad Ending Video")]
     public GameObject badEndingCutsceneObject;
-    public PlayableDirector badEndingTimeline;
+    public VideoPlayer badEndingVideo;
 
     [Header("Player")]
     public GameObject aegisPlayer;
-    public TinyToasterController movementController;
-    public AegisWeaponController weaponController;
+    public MovementController movementController;
+    public WeaponHandler weaponController;
 
     [Header("Scene Names")]
     public string mainMenuSceneName = "MAIN MENU";
@@ -43,7 +48,6 @@ public class AegisEndingManager : MonoBehaviour
     public void ShowDeathPanel()
     {
         if (endingStarted) return;
-
         endingStarted = true;
 
         Time.timeScale = 0f;
@@ -69,7 +73,6 @@ public class AegisEndingManager : MonoBehaviour
     public void PlayGoodEnding()
     {
         if (endingStarted) return;
-
         endingStarted = true;
 
         Time.timeScale = 1f;
@@ -86,16 +89,15 @@ public class AegisEndingManager : MonoBehaviour
         if (goodEndingCutsceneObject != null)
             goodEndingCutsceneObject.SetActive(true);
 
-        if (goodEndingTimeline != null)
-            goodEndingTimeline.Play();
+        if (goodEndingVideo != null)
+            goodEndingVideo.Play();
 
-        Debug.Log("AEGIS GOOD ENDING CUTSCENE");
+        Debug.Log("AEGIS GOOD ENDING VIDEO");
     }
 
     public void PlayBadEnding()
     {
         if (endingStarted) return;
-
         endingStarted = true;
 
         Time.timeScale = 1f;
@@ -112,16 +114,16 @@ public class AegisEndingManager : MonoBehaviour
         if (badEndingCutsceneObject != null)
             badEndingCutsceneObject.SetActive(true);
 
-        if (badEndingTimeline != null)
-            badEndingTimeline.Play();
+        if (badEndingVideo != null)
+            badEndingVideo.Play();
 
-        Debug.Log("AEGIS BAD ENDING CUTSCENE");
+        Debug.Log("AEGIS BAD ENDING VIDEO");
     }
 
     void DisablePlayerControl()
     {
         if (movementController != null)
-            movementController.SetMovementLocked(true);
+            movementController.enabled = false;
 
         if (weaponController != null)
             weaponController.enabled = false;

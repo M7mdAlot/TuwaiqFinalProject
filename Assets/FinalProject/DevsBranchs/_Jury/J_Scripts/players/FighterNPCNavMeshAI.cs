@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Aegis.Core;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class FighterNPCNavMeshAI : MonoBehaviour
+public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
 {
     public enum FighterState
     {
@@ -43,9 +44,14 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     [Header("Auto Fire")]
     public bool useAutoFire = true;
     public float bulletsPerSecond = 8f;
+    public float continuousFireDuration = 5f;
+    public string reloadStateName = "refill";
+    public float reloadDuration = 5f;
 
     [Header("Animator Parameters - Movement")]
     public string speedParam = "Speed";
+    public string moveXParam = "MoveX";
+    public string moveYParam = "MoveY";
     public string isMovingParam = "IsMoving";
     public string isRunningParam = "IsRunning";
     public string isAimingParam = "IsAiming";
@@ -57,6 +63,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     public string summonWeaponParam = "SummonWeapon";
     public string shootTriggerParam = "FireSingle";
     public string shootingBoolParam = "FireAuto";
+    public string reloadParam = "Refill";
 
     [Header("Shoot Animation")]
     public bool forceWeaponAtStart = true;
@@ -65,12 +72,19 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     public string singleShootAnimationStateName = "single shot rifle";
     public float shootAnimationFadeTime = 0.03f;
 
+    [Header("Effects")]
+    public GameObject bulletParticlePrefab;
+
     private FighterState state = FighterState.Patrol;
     private Transform target;
 
     private float patrolTimer;
     private float nextBulletTime;
     private bool autoFirePlaying;
+    private float autoFireStartTime;
+    private bool isReloading;
+    private float reloadEndTime;
+    private bool hasEnteredReloadState;
 
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
@@ -92,6 +106,8 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         {
             agent.speed = patrolSpeed;
             agent.isStopped = false;
+            agent.updateRotation = true;
+            agent.updatePosition = true;
         }
     }
 
@@ -108,6 +124,9 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     {
         if (state == FighterState.Dead) return;
         if (agent == null) return;
+
+        if (animator != null)
+            animator.applyRootMotion = false;
 
         FindTarget();
 
@@ -324,6 +343,14 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
         FaceTarget();
 
+        if (isReloading)
+        {
+            if (IsReloadAnimationDone() || Time.time >= reloadEndTime)
+                isReloading = false;
+            else
+                return;
+        }
+
         if (useAutoFire)
             AutoFire();
         else
@@ -332,6 +359,15 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void AutoFire()
     {
+        if (!autoFirePlaying)
+            autoFireStartTime = Time.time;
+
+        if (Time.time - autoFireStartTime >= continuousFireDuration)
+        {
+            StartReload();
+            return;
+        }
+
         StartAutoShootAnimation();
 
         float bulletDelay = 1f / Mathf.Max(1f, bulletsPerSecond);
@@ -341,6 +377,39 @@ public class FighterNPCNavMeshAI : MonoBehaviour
             nextBulletTime = Time.time + bulletDelay;
             ShootBullet();
         }
+    }
+
+    void StartReload()
+    {
+        StopShootingAnimation();
+
+        isReloading = true;
+        hasEnteredReloadState = false;
+        reloadEndTime = Time.time + reloadDuration;
+
+        SetTrigger(reloadParam);
+
+        Debug.Log(name + " reloading.");
+    }
+
+    bool IsReloadAnimationDone()
+    {
+        if (animator == null || string.IsNullOrEmpty(reloadStateName))
+            return true;
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+        if (!hasEnteredReloadState)
+        {
+            // Wait for the trigger to actually take effect before watching for it to end,
+            // otherwise we'd read the previous (still-active) state and think it's "done" instantly.
+            if (stateInfo.IsName(reloadStateName))
+                hasEnteredReloadState = true;
+
+            return false;
+        }
+
+        return !stateInfo.IsName(reloadStateName);
     }
 
     void SingleFire()
@@ -377,6 +446,8 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void StopShootingAnimation()
     {
+        isReloading = false;
+
         if (!autoFirePlaying)
         {
             SetBool(shootingBoolParam, false);
@@ -397,6 +468,9 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
         Vector3 targetPosition = target.position + Vector3.up * 1.2f;
         Vector3 direction = (targetPosition - origin).normalized;
+
+        if (bulletParticlePrefab != null)
+            Instantiate(bulletParticlePrefab, origin, Quaternion.LookRotation(direction));
 
         bool damagedPlayer = false;
 
@@ -468,13 +542,26 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (animator == null) return;
 
         float currentSpeed = agent.velocity.magnitude;
+        Vector3 localVelocity = transform.InverseTransformDirection(agent.velocity);
+        float normalizeBy = Mathf.Max(agent.speed, 0.01f);
 
         bool isMoving = currentSpeed > 0.1f;
         bool isRunning = state == FighterState.Chase || currentSpeed > 3.2f;
 
         SetFloat(speedParam, currentSpeed);
+        SetFloat(moveXParam, localVelocity.x / normalizeBy);
+        SetFloat(moveYParam, localVelocity.z / normalizeBy);
         SetBool(isMovingParam, isMoving);
         SetBool(isRunningParam, isRunning);
+    }
+
+    // Bridge only: no numeric health exists yet for this NPC (it only plays the
+    // hit-reaction). Real health/death-on-damage is a separate feature decision.
+    public bool IsAlive => state != FighterState.Dead;
+
+    void IDamageable.TakeDamage(float amount)
+    {
+        TakeHit();
     }
 
     public void TakeHit()

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class DialogueManager : MonoBehaviour
     public TMP_Text speakerNameText;
     public TMP_Text dialogueBodyText;
     public TMP_Text continueText;
+
+    [Header("Events")]
+    public UnityEvent onDialogueOpened;
+    public UnityEvent onDialogueClosed;
 
     [Header("Input")]
     public string interactActionName = "Interact";
@@ -134,6 +139,8 @@ public class DialogueManager : MonoBehaviour
         if (lockMovementDuringDialogue && movementController != null)
             movementController.SetMovementLocked(true);
 
+        onDialogueOpened?.Invoke();
+
         ShowCurrentLine();
     }
 
@@ -172,6 +179,8 @@ public class DialogueManager : MonoBehaviour
 
         if (lockMovementDuringDialogue && movementController != null)
             movementController.SetMovementLocked(false);
+
+        onDialogueClosed?.Invoke();
     }
 
     void CloseDialogueInstant()

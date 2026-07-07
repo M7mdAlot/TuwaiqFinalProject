@@ -1,0 +1,177 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7802113161038617857
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3466695404299294729}
+  - component: {fileID: 884451755227251699}
+  - component: {fileID: 2519084489125650249}
+  - component: {fileID: 8602324511583139429}
+  - component: {fileID: 5863488880444908734}
+  - component: {fileID: 5147612575536003823}
+  - component: {fileID: -6763586478744782170}
+  - component: {fileID: 1298357329845052466}
+  m_Layer: 0
+  m_Name: manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3466695404299294729
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 848.6605, y: 526.0092, z: 12.49695}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &884451755227251699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40bdd3cdf56d2334d80c4bb560e30f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseInputController
+  playerInput: {fileID: 0}
+  uiController: {fileID: 0}
+  pauseActionName: Pause
+--- !u!114 &2519084489125650249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c81c4c48ebf4154da5ba30e879975c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
+  playerInput: {fileID: 0}
+  movementController: {fileID: 0}
+  dialoguePanel: {fileID: 0}
+  speakerNameText: {fileID: 0}
+  dialogueBodyText: {fileID: 0}
+  continueText: {fileID: 0}
+  onDialogueOpened:
+    m_PersistentCalls:
+      m_Calls: []
+  onDialogueClosed:
+    m_PersistentCalls:
+      m_Calls: []
+  interactActionName: Interact
+  lockMovementDuringDialogue: 1
+  startInputDelay: 0.25
+--- !u!114 &8602324511583139429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0c5d9a116bfe843a01dbd71f56f9b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CursorManager
+  isGameplayScene: 0
+  panelsThatShowCursor:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  showCursorWhenAnyPanelIsOpen: 1
+--- !u!114 &5863488880444908734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9699423b6af80c04e8a3eb3e36819de5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AegisDialogueLibrary
+--- !u!114 &5147612575536003823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6349f1a6879b87a4e8ff55fd14251cee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Core.GameManager
+  _persistAcrossScenes: 1
+  _autoAdvanceFromBoot: 1
+--- !u!114 &-6763586478744782170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 723b5a4da2af1bb4aa9b06621611ad9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Core.AudioManager
+  _persistAcrossScenes: 1
+  _musicSource: {fileID: 0}
+  _sfxSource: {fileID: 0}
+  _masterVolume: 1
+  _musicVolume: 0.7
+  _sfxVolume: 1
+--- !u!114 &1298357329845052466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9dc44e74b406134b8649618acde3cff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Systems.CrisisManager
+  _startMode: 0
+  _watchSpawner: {fileID: 0}
+  _triggerFractionCleared: 0.6
+  _duration: 60
+  _device: {fileID: 0}
+  _objectiveText: Shut down the reactor!
+  _hideBannerOnResolve: 1
+  _onTriggeredChannel: {fileID: 0}
+  _onSucceededChannel: {fileID: 0}
+  _onFailedChannel: {fileID: 0}
+  OnCrisisTriggered:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCrisisSucceeded:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCrisisFailed:
+    m_PersistentCalls:
+      m_Calls: []

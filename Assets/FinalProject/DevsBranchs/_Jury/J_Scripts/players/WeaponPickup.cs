@@ -1,6 +1,10 @@
 using UnityEngine;
+using Aegis.Core;
 
-public class WeaponPickup : MonoBehaviour
+// Implements Aegis.Core.IInteractable additively (bridge only) so Mohammed's
+// InteractionController can pick this up too. The existing SimpleInteractable +
+// PlayerHoldInteractor flow (Inspector-wired to PickupWeapon()) is untouched.
+public class WeaponPickup : MonoBehaviour, IInteractable
 {
     public AegisStoryManager storyManager;
     public AegisWeaponController weaponController;
@@ -10,6 +14,15 @@ public class WeaponPickup : MonoBehaviour
 
     [Header("Settings")]
     public bool disablePickupAfterUse = true;
+
+    public string Prompt => "Hold F to pick up weapon";
+    public float HoldDuration => 0f;
+    public bool CanInteract => gameObject.activeInHierarchy;
+
+    void IInteractable.Interact(GameObject interactor)
+    {
+        PickupWeapon();
+    }
 
     public void PickupWeapon()
     {
