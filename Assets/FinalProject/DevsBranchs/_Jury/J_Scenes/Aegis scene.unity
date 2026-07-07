@@ -1996,7 +1996,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 599868995}
         m_TargetAssemblyTypeName: ObjectiveUIManager, Assembly-CSharp
-        m_MethodName: SendMessage
+        m_MethodName: ShowObjective
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
