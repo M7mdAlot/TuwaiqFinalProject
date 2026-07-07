@@ -3,11 +3,11 @@ using UnityEngine.AI;
 using Aegis.Core;
 
 // Turns an Aegis or X model into a HOSTILE NPC that hunts and kills the player.
-// - In Aegis's campaign, use this on the corrupted X-copies (Target = Aegis).
-// - In X's campaign, use this on the Aegis Two countermeasure (Target = X).
-// Chases the chosen player with a NavMeshAgent and melee-punches for damage when close.
-// Is itself damageable (implements IDamageable) so the player can kill it back.
-[RequireComponent(typeof(NavMeshAgent))]
+// - Aegis campaign: put on the corrupted X-copies (Target = Aegis).
+// - X campaign: put on the Aegis Two countermeasure (Target = X).
+// Chases with a NavMeshAgent when a NavMesh is baked; otherwise falls back to walking
+// straight at the player, so it still works even if navigation isn't set up. Melee-punches
+// for damage in range, always faces the target, and is itself damageable.
 public class EnemyRobotAI : MonoBehaviour, IDamageable
 {
     public enum RobotState { Idle, Chase, Attack, Dead }
@@ -17,23 +17,23 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     public Animator animator;
 
     [Header("Who to hunt")]
-    [Tooltip("The player type this robot attacks. Aegis campaign -> Aegis; X campaign -> X.")]
     public PlayerCharacterIdentity.PlayerType targetPlayerType = PlayerCharacterIdentity.PlayerType.Aegis;
 
     [Header("Detection & movement")]
-    public float visionRange = 30f;   // large: a hunter that always comes for you
+    public float visionRange = 50f;
     public float chaseSpeed = 4.5f;
-    public float attackRange = 2.2f;
-    public float rotationSpeed = 10f;
+    public float attackRange = 2.4f;
+    public float rotationSpeed = 12f;
 
     [Header("Attack")]
     public float damage = 12f;
     public float attackCooldown = 1.1f;
-    [Tooltip("Delay after the punch starts before damage lands (sync to the punch anim).")]
-    public float damageDelay = 0.35f;
+    public float damageDelay = 0.3f;
 
     [Header("Health")]
     public float maxHealth = 120f;
+    [Tooltip("Seconds to keep the corpse after death. 0 or less = stay forever.")]
+    public float destroyDelay = 4f;
 
     [Header("Animator params")]
     public string speedParam = "Speed";
@@ -49,6 +49,8 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     private Transform target;
     private float nextAttackTime;
     private float currentHealth;
+    private Vector3 lastPos;
+    private bool warnedNoTarget;
 
     public bool IsAlive => state != RobotState.Dead;
 
@@ -58,91 +60,180 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
         currentHealth = maxHealth;
+        lastPos = transform.position;
 
         if (animator != null) animator.applyRootMotion = false;
 
-        if (agent != null)
+        if (agent != null && agent.isOnNavMesh)
         {
             agent.speed = chaseSpeed;
             agent.stoppingDistance = attackRange * 0.8f;
-            agent.updateRotation = true;
+            agent.updateRotation = false; // we rotate manually so it always faces the player
         }
     }
 
     void Update()
     {
-        if (state == RobotState.Dead || agent == null) return;
+        if (state == RobotState.Dead) return;
 
         FindTarget();
 
+        if (target != null)
+        {
+            FaceTarget(); // always look at the player
+
+            // Once locked on, pursue relentlessly — no "too far, give up" gate.
+            float dist = Flat(transform.position, target.position);
+            state = dist <= attackRange ? RobotState.Attack : RobotState.Chase;
+        }
+        else
+        {
+            state = RobotState.Idle;
+        }
+
         switch (state)
         {
-            case RobotState.Idle: HandleIdle(); break;
-            case RobotState.Chase: HandleChase(); break;
-            case RobotState.Attack: HandleAttack(); break;
+            case RobotState.Chase: MoveTowardTarget(); break;
+            case RobotState.Attack: DoAttack(); break;
         }
 
         UpdateAnimator();
     }
 
+    private float nextSearchWarnTime;
+
     void FindTarget()
     {
+        if (target != null) return;
+
+        PlayerCharacterIdentity[] players =
+            FindObjectsByType<PlayerCharacterIdentity>(FindObjectsSortMode.None);
+
+        // 1) Preferred: a player of the exact target type (not self).
+        target = PickClosest(players, requireExactType: true);
+
+        // 2) Fallback: ANY player that isn't us (in case the type field is misconfigured).
+        if (target == null)
+            target = PickClosest(players, requireExactType: false);
+
+        // 3) Last resort: an object tagged "Player".
         if (target == null)
         {
-            PlayerCharacterIdentity[] players =
-                FindObjectsByType<PlayerCharacterIdentity>(FindObjectsSortMode.None);
-
-            float closest = Mathf.Infinity;
-            foreach (PlayerCharacterIdentity p in players)
+            try
             {
-                if (p == null || p.playerType != targetPlayerType) continue;
-
-                float d = Vector3.Distance(transform.position, p.transform.position);
-                if (d < closest) { closest = d; target = p.transform; }
+                GameObject tagged = GameObject.FindGameObjectWithTag("Player");
+                if (tagged != null && tagged.transform != transform
+                    && !tagged.transform.IsChildOf(transform))
+                    target = tagged.transform;
             }
+            catch { /* "Player" tag may not exist — ignore */ }
         }
 
-        if (target == null) { state = RobotState.Idle; return; }
-
-        float dist = Vector3.Distance(transform.position, target.position);
-        if (dist > visionRange) state = RobotState.Idle;
-        else if (dist <= attackRange) state = RobotState.Attack;
-        else state = RobotState.Chase;
+        if (target != null)
+        {
+            Debug.Log("EnemyRobotAI '" + name + "' -> targeting '" + target.name
+                + "' at distance " + Flat(transform.position, target.position).ToString("F1"), this);
+        }
+        else if (Time.time >= nextSearchWarnTime)
+        {
+            nextSearchWarnTime = Time.time + 2f;
+            Debug.LogWarning("EnemyRobotAI on '" + name + "': found NO player to hunt. "
+                + "The player needs a PlayerCharacterIdentity OR the 'Player' tag.", this);
+        }
     }
 
-    void HandleIdle()
+    Transform PickClosest(PlayerCharacterIdentity[] players, bool requireExactType)
     {
-        agent.isStopped = true;
+        Transform best = null;
+        float closest = Mathf.Infinity;
+
+        foreach (PlayerCharacterIdentity p in players)
+        {
+            if (p == null) continue;
+            if (requireExactType && p.playerType != targetPlayerType) continue;
+
+            // Never target self / our own hierarchy (that's the "punch air in place" bug).
+            if (p.transform == transform || p.transform.IsChildOf(transform)
+                || transform.IsChildOf(p.transform)) continue;
+
+            float d = Vector3.Distance(transform.position, p.transform.position);
+            if (d < closest) { closest = d; best = p.transform; }
+        }
+
+        return best;
     }
 
-    void HandleChase()
+    void MoveTowardTarget()
     {
-        agent.isStopped = false;
-        agent.speed = chaseSpeed;
-        agent.SetDestination(target.position);
+        // Preferred: NavMeshAgent (respects walls/obstacles).
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.speed = chaseSpeed;
+            agent.SetDestination(target.position);
+            return;
+        }
+
+        // An enabled agent that ISN'T on a NavMesh will fight/zero our transform movement.
+        // Disable it so the straight-line fallback below can actually move the robot.
+        if (agent != null && agent.enabled && !agent.isOnNavMesh)
+            agent.enabled = false;
+
+        // Fallback: no baked NavMesh — walk toward the player but STEER AROUND walls
+        // so it doesn't grind into them and get stuck.
+        Vector3 dir = target.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        dir.Normalize();
+
+        Vector3 origin = transform.position + Vector3.up * 1f;
+        float check = 1.5f;
+
+        if (BlockedAhead(origin, dir, check))
+        {
+            // Try steering right, then left, then hard turn — first clear direction wins.
+            Vector3 right = Quaternion.Euler(0f, 55f, 0f) * dir;
+            Vector3 left = Quaternion.Euler(0f, -55f, 0f) * dir;
+            Vector3 hardRight = Quaternion.Euler(0f, 90f, 0f) * dir;
+            Vector3 hardLeft = Quaternion.Euler(0f, -90f, 0f) * dir;
+
+            if (!BlockedAhead(origin, right, check)) dir = right;
+            else if (!BlockedAhead(origin, left, check)) dir = left;
+            else if (!BlockedAhead(origin, hardRight, check)) dir = hardRight;
+            else if (!BlockedAhead(origin, hardLeft, check)) dir = hardLeft;
+            else return; // fully boxed in this frame — don't push into the wall
+        }
+
+        transform.position += dir * chaseSpeed * Time.deltaTime;
     }
 
-    void HandleAttack()
+    // True if a wall/obstacle is directly ahead — ignores the target itself and this robot.
+    bool BlockedAhead(Vector3 origin, Vector3 dir, float dist)
     {
-        agent.isStopped = true;
-        FaceTarget();
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.transform == target || (target != null && hit.transform.IsChildOf(target))) return false;
+            if (hit.transform == transform || hit.transform.IsChildOf(transform)) return false;
+            return true;
+        }
+        return false;
+    }
+
+    void DoAttack()
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
 
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + attackCooldown;
 
-        // Random left/right punch to match the Aegis/X punch states.
         SetTrigger(Random.value < 0.5f ? leftPunchParam : rightPunchParam);
-
-        // Damage lands slightly after the swing starts.
         Invoke(nameof(DealDamage), damageDelay);
     }
 
     void DealDamage()
     {
         if (state == RobotState.Dead || target == null) return;
-
-        // Only connect if the player is still in range when the punch lands.
-        if (Vector3.Distance(transform.position, target.position) > attackRange + 0.6f) return;
+        if (Flat(transform.position, target.position) > attackRange + 1f) return;
 
         IDamageable dmg = target.GetComponentInParent<IDamageable>();
         if (dmg != null && dmg.IsAlive) dmg.TakeDamage(damage);
@@ -152,7 +243,7 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     {
         Vector3 dir = target.position - transform.position;
         dir.y = 0f;
-        if (dir.sqrMagnitude < 0.01f) return;
+        if (dir.sqrMagnitude < 0.0001f) return;
 
         transform.rotation = Quaternion.Slerp(
             transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
@@ -162,23 +253,37 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     {
         if (animator == null) return;
 
-        float speed = agent.velocity.magnitude;
-        Vector3 local = transform.InverseTransformDirection(agent.velocity);
-        float norm = Mathf.Max(agent.speed, 0.01f);
+        // Drive locomotion from ACTUAL movement, so it works with the agent or the fallback.
+        Vector3 delta = transform.position - lastPos;
+        delta.y = 0f;
+        float speed = delta.magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
+        Vector3 local = transform.InverseTransformDirection(delta.normalized);
+        float t = Mathf.Clamp01(speed / Mathf.Max(chaseSpeed, 0.01f));
 
         SetFloat(speedParam, speed);
-        SetFloat(moveXParam, local.x / norm);
-        SetFloat(moveYParam, local.z / norm);
+        SetFloat(moveXParam, local.x * t);
+        SetFloat(moveYParam, local.z * t);
         SetBool(isRunningParam, speed > 0.1f);
+
+        lastPos = transform.position;
+    }
+
+    float Flat(Vector3 a, Vector3 b)
+    {
+        a.y = 0f; b.y = 0f;
+        return Vector3.Distance(a, b);
     }
 
     // ---- IDamageable: the player can kill this robot ----
+    // Needs a Collider on this object (any) so Mohammed's Bullet can hit it.
     public void TakeDamage(float amount)
     {
         if (state == RobotState.Dead) return;
 
         currentHealth -= amount;
         SetTrigger(damageParam);
+
+        Debug.Log("EnemyRobotAI '" + name + "' took " + amount + " dmg. HP=" + currentHealth, this);
 
         if (currentHealth <= 0f) Die();
     }
@@ -187,14 +292,23 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     {
         state = RobotState.Dead;
 
-        if (agent != null) { agent.ResetPath(); agent.isStopped = true; }
+        if (agent != null && agent.isOnNavMesh) { agent.ResetPath(); agent.isStopped = true; }
+        if (agent != null) agent.enabled = false;
 
         SetBool(isRunningParam, false);
         SetBool(isDeadParam, true);
         CancelInvoke();
+
+        // Stop blocking the player and stop taking further hits.
+        foreach (Collider c in GetComponentsInChildren<Collider>())
+            c.enabled = false;
+
+        Debug.Log("EnemyRobotAI '" + name + "' DIED.", this);
+
+        if (destroyDelay > 0f)
+            Destroy(gameObject, destroyDelay);
     }
 
-    // ---- safe animator setters (only touch params that exist) ----
     void SetFloat(string p, float v) { if (HasParam(p)) animator.SetFloat(p, v); }
     void SetBool(string p, bool v) { if (HasParam(p)) animator.SetBool(p, v); }
     void SetTrigger(string p) { if (HasParam(p)) animator.SetTrigger(p); }
