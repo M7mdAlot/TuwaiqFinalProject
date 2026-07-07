@@ -2,9 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Aegis.Core;
+using Aegis.Player;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
+public class FighterNPCNavMeshAI : MonoBehaviour
 {
     public enum FighterState
     {
@@ -18,6 +19,8 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
     public NavMeshAgent agent;
     public Animator animator;
     public Transform firePoint;
+    [Tooltip("Mohammed's HealthSystem on this NPC — provides the HP and the die-on-zero.")]
+    public HealthSystem health;
 
     [Header("Detection")]
     public float visionRange = 15f;
@@ -75,6 +78,14 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
     [Header("Effects")]
     public GameObject bulletParticlePrefab;
 
+    [Header("Death")]
+    [Tooltip("Optional: exact death animation STATE name to force-play (bypasses transition setup). " +
+             "Leave empty to rely only on the IsDead bool.")]
+    public string deathAnimationStateName = "";
+    public float deathAnimationFadeTime = 0.05f;
+    [Tooltip("Destroy this NPC this many seconds after it dies. 0 = never.")]
+    public float destroyAfterDeath = 5f;
+
     private FighterState state = FighterState.Patrol;
     private Transform target;
 
@@ -97,6 +108,9 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
 
+        if (health == null)
+            health = GetComponent<HealthSystem>();
+
         CacheAnimatorParams();
 
         if (animator != null)
@@ -108,6 +122,24 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
             agent.isStopped = false;
             agent.updateRotation = true;
             agent.updatePosition = true;
+        }
+    }
+
+    void OnEnable()
+    {
+        if (health != null)
+        {
+            health.DamageTaken += OnHealthDamaged;
+            health.Died += OnHealthDied;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (health != null)
+        {
+            health.DamageTaken -= OnHealthDamaged;
+            health.Died -= OnHealthDied;
         }
     }
 
@@ -555,13 +587,20 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         SetBool(isRunningParam, isRunning);
     }
 
-    // Bridge only: no numeric health exists yet for this NPC (it only plays the
-    // hit-reaction). Real health/death-on-damage is a separate feature decision.
     public bool IsAlive => state != FighterState.Dead;
 
-    void IDamageable.TakeDamage(float amount)
+    // Health + death now come from Mohammed's HealthSystem on this NPC (auto-linked in Awake):
+    // it owns the HP and raises DamageTaken (play the hit reaction) and Died (play the death anim).
+    private void OnHealthDamaged(float amount)
     {
+        if (state == FighterState.Dead) return;
+        if (health != null && !health.IsAlive) return; // the fatal hit -> skip the flinch, go straight to death
         TakeHit();
+    }
+
+    private void OnHealthDied()
+    {
+        Die();
     }
 
     public void TakeHit()
@@ -571,6 +610,8 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
 
     public void Die()
     {
+        if (state == FighterState.Dead) return; // never die twice
+
         state = FighterState.Dead;
 
         if (agent != null)
@@ -584,6 +625,14 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         SetBool(isAimingParam, false);
         SetBool(shootingBoolParam, false);
         SetBool(isDeadParam, true);
+
+        // Force-play the death state so it works even if the IsDead transition isn't wired up.
+        if (animator != null && !string.IsNullOrEmpty(deathAnimationStateName))
+            animator.CrossFadeInFixedTime(deathAnimationStateName, deathAnimationFadeTime, 0);
+
+        // Disappear after a delay.
+        if (destroyAfterDeath > 0f)
+            Destroy(gameObject, destroyAfterDeath);
     }
 
     void CacheAnimatorParams()

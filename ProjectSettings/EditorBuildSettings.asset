@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/FinalProject/DevsBranchs/_Mohammed/M_Scenes/M_XScene.unity
     guid: 4f9c6b838d4134340a669d105bad2d9a
+  - enabled: 1
+    path: Assets/FinalProject/DevsBranchs/_Mohammed/M_Scenes/M_XScene2F.unity
+    guid: 58c6eff40c821564c8f364c28452be26
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
