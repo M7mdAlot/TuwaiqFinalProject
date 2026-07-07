@@ -956,6 +956,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: solider (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 6427743607413144913, guid: ba3b42f6bf94cb14b8a44afde2dea362, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
