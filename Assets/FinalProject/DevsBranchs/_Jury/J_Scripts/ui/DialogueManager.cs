@@ -50,6 +50,12 @@ public class DialogueManager : MonoBehaviour
 
     void Awake()
     {
+        // A duplicate "manager" in a gameplay scene would otherwise grab Instance and then be
+        // destroyed (the persistent Main-Menu manager wins), leaving Instance pointing at a
+        // destroyed object == null. Don't overwrite Instance if a live one already owns it.
+        if (Instance != null && Instance != this)
+            return;
+
         Instance = this;
 
         if (playerInput == null)
@@ -70,10 +76,32 @@ public class DialogueManager : MonoBehaviour
     void Update()
     {
         if (!isDialogueOpen) return;
-        if (interactAction == null) return;
         if (Time.time < nextInputAllowedTime) return;
 
-        if (interactAction.WasPressedThisFrame())
+        // Lazily grab the Interact action (this manager may have woken in the Main Menu
+        // before any player existed, so interactAction can be null here).
+        if (interactAction == null)
+        {
+            if (playerInput == null)
+                playerInput = FindFirstObjectByType<PlayerInput>();
+            if (playerInput != null)
+                interactAction = playerInput.actions.FindAction(interactActionName, false);
+        }
+
+        bool advance = false;
+
+        if (interactAction != null && interactAction.WasPressedThisFrame())
+            advance = true;
+
+        // Direct fallbacks so the line always advances (E / Space / left-click).
+        if (Keyboard.current != null &&
+            (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame))
+            advance = true;
+
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            advance = true;
+
+        if (advance)
             ShowNextLine();
     }
 
@@ -129,6 +157,11 @@ public class DialogueManager : MonoBehaviour
         currentIndex = 0;
         isDialogueOpen = true;
         nextInputAllowedTime = Time.time + startInputDelay;
+
+        Debug.Log("DIALOGUE OpenDialogue: lines=" + currentLines.Count
+            + " | dialoguePanel=" + (dialoguePanel != null)
+            + " | bodyText=" + (dialogueBodyText != null)
+            + " | speakerText=" + (speakerNameText != null), this);
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);

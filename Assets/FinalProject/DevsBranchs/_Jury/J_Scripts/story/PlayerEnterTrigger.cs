@@ -26,14 +26,21 @@ public class PlayerEnterTrigger : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log("TRIGGER: something entered -> " + other.name, this);
+
         if (onlyOnce && used) return;
 
         bool isPlayer = other.GetComponentInParent<PlayerCharacterIdentity>() != null
                         || other.CompareTag("Player");
 
-        if (!isPlayer) return;
+        if (!isPlayer)
+        {
+            Debug.Log("TRIGGER: '" + other.name + "' is NOT the player, ignored.", this);
+            return;
+        }
 
         used = true;
+        Debug.Log("TRIGGER: player entered -> invoking OnPlayerEnter.", this);
         onPlayerEnter?.Invoke();
     }
 }
