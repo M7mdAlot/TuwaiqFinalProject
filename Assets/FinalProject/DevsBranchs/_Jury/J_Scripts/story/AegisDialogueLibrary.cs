@@ -4,6 +4,9 @@ public class AegisDialogueLibrary : MonoBehaviour
 {
     void Play(string[] lines)
     {
+        Debug.Log("DIALOGUE LIBRARY Play() reached. lines=" + (lines != null ? lines.Length : 0)
+            + " | DialogueManager.Instance=" + (DialogueManager.Instance != null), this);
+
         if (DialogueManager.Instance == null)
         {
             Debug.LogWarning("No DialogueManager found in scene.");
