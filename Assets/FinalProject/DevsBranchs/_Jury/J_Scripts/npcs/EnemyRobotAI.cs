@@ -281,6 +281,7 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
         SetFloat(speedParam, chasing ? chaseSpeed : measured);
         SetFloat(moveXParam, local.x * t);
         SetFloat(moveYParam, local.z * t);
+        SetBool(isMovingParam, chasing || measured > 0.1f);
         SetBool(isRunningParam, chasing || measured > 0.1f);
 
         lastPos = transform.position;
