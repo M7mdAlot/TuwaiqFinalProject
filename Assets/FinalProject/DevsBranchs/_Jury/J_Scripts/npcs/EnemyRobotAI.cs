@@ -21,7 +21,9 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
 
     [Header("Detection & movement")]
     public float visionRange = 50f;
-    public float chaseSpeed = 4.5f;
+    [Tooltip("X waits where you placed it until the player comes within this range, then charges (and never gives up).")]
+    public float aggroRange = 25f;
+    public float chaseSpeed = 6.5f;
     public float attackRange = 2.4f;
     public float rotationSpeed = 12f;
 
@@ -51,6 +53,7 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     private float currentHealth;
     private Vector3 lastPos;
     private bool warnedNoTarget;
+    private bool hasAggro;
 
     public bool IsAlive => state != RobotState.Dead;
 
@@ -80,11 +83,22 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
 
         if (target != null)
         {
-            FaceTarget(); // always look at the player
-
-            // Once locked on, pursue relentlessly — no "too far, give up" gate.
             float dist = Flat(transform.position, target.position);
-            state = dist <= attackRange ? RobotState.Attack : RobotState.Chase;
+
+            // Stay put where placed until the player comes within aggroRange; then charge
+            // and never give up (relentless pursuit once triggered).
+            if (!hasAggro && dist <= aggroRange)
+                hasAggro = true;
+
+            if (hasAggro)
+            {
+                FaceTarget();
+                state = dist <= attackRange ? RobotState.Attack : RobotState.Chase;
+            }
+            else
+            {
+                state = RobotState.Idle;
+            }
         }
         else
         {
@@ -253,17 +267,20 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     {
         if (animator == null) return;
 
-        // Drive locomotion from ACTUAL movement, so it works with the agent or the fallback.
         Vector3 delta = transform.position - lastPos;
         delta.y = 0f;
-        float speed = delta.magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
-        Vector3 local = transform.InverseTransformDirection(delta.normalized);
-        float t = Mathf.Clamp01(speed / Mathf.Max(chaseSpeed, 0.01f));
+        float measured = delta.magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
 
-        SetFloat(speedParam, speed);
+        // While chasing, force a forward RUN so it visibly sprints at the player (it always
+        // faces the player, so "forward" = toward you). Otherwise use measured movement.
+        bool chasing = state == RobotState.Chase;
+        Vector3 local = chasing ? Vector3.forward : transform.InverseTransformDirection(delta.normalized);
+        float t = chasing ? 1f : Mathf.Clamp01(measured / Mathf.Max(chaseSpeed, 0.01f));
+
+        SetFloat(speedParam, chasing ? chaseSpeed : measured);
         SetFloat(moveXParam, local.x * t);
         SetFloat(moveYParam, local.z * t);
-        SetBool(isRunningParam, speed > 0.1f);
+        SetBool(isRunningParam, chasing || measured > 0.1f);
 
         lastPos = transform.position;
     }

@@ -45,10 +45,14 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     public string damageParam = "Damage";
     public string isDeadParam = "IsDead";
 
+    [Header("Health")]
+    public float maxHealth = 40f;
+
     private ScientistState state = ScientistState.Wander;
     private Transform threat;
     private float wanderTimer;
     private float fleeTimer;
+    private float currentHealth;
 
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
@@ -62,6 +66,8 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
             animator = GetComponentInChildren<Animator>();
 
         CacheAnimatorParams();
+
+        currentHealth = maxHealth;
 
         if (animator != null)
             animator.applyRootMotion = false;
@@ -305,7 +311,17 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 
     void IDamageable.TakeDamage(float amount)
     {
-        TakeHit();
+        if (state == ScientistState.Dead) return;
+
+        currentHealth -= amount;
+        SetTrigger(damageParam);
+
+        if (currentHealth <= 0f)
+            Die();          // dead: Update() bails and the agent is stopped -> frozen in place
+        else
+            StartFlee();    // still alive: run away
+
+        Debug.Log(name + " scientist took " + amount + " dmg. HP=" + currentHealth, this);
     }
 
     public void TakeHit()
