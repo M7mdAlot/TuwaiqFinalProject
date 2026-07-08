@@ -41,6 +41,7 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     public string speedParam = "Speed";
     public string moveXParam = "MoveX";
     public string moveYParam = "MoveY";
+    public string isMovingParam = "IsMoving";
     public string isRunningParam = "IsRunning";
     public string leftPunchParam = "LeftPunch";
     public string rightPunchParam = "RightPunch";
