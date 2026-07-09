@@ -28,9 +28,16 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     public float rotationSpeed = 12f;
 
     [Header("Attack")]
+    [Tooltip("ON = X shoots the player from range (rifle). OFF = melee punch up close.")]
+    public bool useRangedAttack = true;
+    public float rangedAttackRange = 14f;
     public float damage = 12f;
     public float attackCooldown = 1.1f;
     public float damageDelay = 0.3f;
+
+    [Header("Ranged animator params")]
+    public string hasWeaponParam = "HasWeapon";
+    public string fireAutoParam = "FireAuto";
 
     [Header("Health")]
     public float maxHealth = 120f;
@@ -104,7 +111,16 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
             if (hasAggro)
             {
                 FaceTarget();
-                state = dist <= attackRange ? RobotState.Attack : RobotState.Chase;
+
+                // Dead-zone so X commits to shooting or chasing instead of flip-flopping at
+                // the exact range boundary (which looked like it was "mirroring" you).
+                float engageRange = useRangedAttack ? rangedAttackRange : attackRange;
+                float leaveRange = engageRange * 1.3f;
+
+                if (state == RobotState.Attack)
+                    state = dist <= leaveRange ? RobotState.Attack : RobotState.Chase;
+                else
+                    state = dist <= engageRange ? RobotState.Attack : RobotState.Chase;
             }
             else
             {
@@ -115,6 +131,10 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
         {
             state = RobotState.Idle;
         }
+
+        // Not shooting unless we're actually attacking.
+        if (state != RobotState.Attack)
+            SetBool(fireAutoParam, false);
 
         switch (state)
         {
@@ -248,17 +268,34 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
 
+        if (useRangedAttack)
+        {
+            // Hold the rifle up and keep the shooting animation running while in range.
+            SetBool(hasWeaponParam, true);
+            SetBool(fireAutoParam, true);
+        }
+
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + attackCooldown;
 
-        SetTrigger(Random.value < 0.5f ? leftPunchParam : rightPunchParam);
-        Invoke(nameof(DealDamage), damageDelay);
+        if (useRangedAttack)
+        {
+            // Ranged: the shooting loop is already playing; just land a hit on the beat.
+            Invoke(nameof(DealDamage), damageDelay);
+        }
+        else
+        {
+            SetTrigger(Random.value < 0.5f ? leftPunchParam : rightPunchParam);
+            Invoke(nameof(DealDamage), damageDelay);
+        }
     }
 
     void DealDamage()
     {
         if (state == RobotState.Dead || target == null) return;
-        if (Flat(transform.position, target.position) > attackRange + 1f) return;
+
+        float maxReach = useRangedAttack ? rangedAttackRange + 2f : attackRange + 1f;
+        if (Flat(transform.position, target.position) > maxReach) return;
 
         IDamageable dmg = target.GetComponentInParent<IDamageable>();
         if (dmg != null && dmg.IsAlive) dmg.TakeDamage(damage);

@@ -27,6 +27,9 @@ public class StorySequencer : MonoBehaviour
 
     private int index = -1;
 
+    /// <summary>The number of the last beat that played (-1 = none yet). Triggers gate on this.</summary>
+    public int CurrentBeat => index;
+
     // --- Call these from a PlayerEnterTrigger / SimpleInteractable event ---
 
     /// <summary>Play a specific beat by number (0 = first). Order-proof.</summary>

@@ -15,6 +15,12 @@ public class PlayerEnterTrigger : MonoBehaviour
     [Header("Options")]
     public bool onlyOnce = true;
 
+    [Header("Gate (optional — for order-dependent triggers)")]
+    [Tooltip("If set, this trigger only fires once the StorySequencer has played at least the beat below. Use it so event 7 can't happen before event 6, or the bomb room only opens after earlier beats.")]
+    public StorySequencer requireSequencer;
+    [Tooltip("Minimum beat number that must have played. -1 = no gate.")]
+    public int requireBeatAtLeast = -1;
+
     private bool used;
 
     void Reset()
@@ -36,6 +42,15 @@ public class PlayerEnterTrigger : MonoBehaviour
         if (!isPlayer)
         {
             Debug.Log("TRIGGER: '" + other.name + "' is NOT the player, ignored.", this);
+            return;
+        }
+
+        // Gate: don't fire (and don't consume the trigger) until the prerequisite beat played.
+        if (requireBeatAtLeast >= 0 && requireSequencer != null
+            && requireSequencer.CurrentBeat < requireBeatAtLeast)
+        {
+            Debug.Log("TRIGGER gated: needs beat " + requireBeatAtLeast
+                + ", sequencer is at " + requireSequencer.CurrentBeat + " — ignored for now.", this);
             return;
         }
 
