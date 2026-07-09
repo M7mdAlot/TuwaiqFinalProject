@@ -80,6 +80,16 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     {
         if (state == RobotState.Dead) return;
 
+        // Freeze in place while dialogue is playing so it isn't chaos.
+        if (DialogueManager.DialogueActive)
+        {
+            if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            return;
+        }
+
         FindTarget();
 
         if (target != null)

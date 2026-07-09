@@ -157,6 +157,17 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (state == FighterState.Dead) return;
         if (agent == null) return;
 
+        // Freeze in place while dialogue is playing so it isn't chaos.
+        if (DialogueManager.DialogueActive)
+        {
+            if (agent.isOnNavMesh) agent.isStopped = true;
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            SetBool(shootingBoolParam, false);
+            return;
+        }
+
         if (animator != null)
             animator.applyRootMotion = false;
 

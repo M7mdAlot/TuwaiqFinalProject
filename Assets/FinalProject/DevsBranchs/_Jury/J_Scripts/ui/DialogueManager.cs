@@ -3,10 +3,16 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Events;
+using Aegis.Player;
 
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
+
+    /// <summary>True while any dialogue is on screen — NPCs read this to freeze in place.</summary>
+    public static bool DialogueActive { get; private set; }
+
+    private MovementController[] frozenMovers;
 
     [Header("References")]
     public PlayerInput playerInput;
@@ -134,6 +140,37 @@ public class DialogueManager : MonoBehaviour
         OpenDialogue();
     }
 
+    // If the panel/text fields weren't wired in the Inspector, find them by name at runtime
+    // (searches everything, including inactive objects and the persistent Canvas). This
+    // removes the fragile cross-scene wiring that kept breaking.
+    void EnsureUI()
+    {
+        if (dialoguePanel != null && dialogueBodyText != null && speakerNameText != null)
+            return;
+
+        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (Transform t in all)
+        {
+            string n = t.name.ToLower();
+
+            if (dialoguePanel == null && n.Contains("panel") && n.Contains("dialo"))
+                dialoguePanel = t.gameObject;
+
+            if (speakerNameText == null && n.Contains("names"))
+            {
+                TMP_Text tmp = t.GetComponent<TMP_Text>();
+                if (tmp != null) speakerNameText = tmp;
+            }
+
+            if (dialogueBodyText == null && n.Contains("dialouge") && n.Contains("text"))
+            {
+                TMP_Text tmp = t.GetComponent<TMP_Text>();
+                if (tmp != null) dialogueBodyText = tmp;
+            }
+        }
+    }
+
     DialogueLine ParseLine(string rawLine)
     {
         if (string.IsNullOrWhiteSpace(rawLine))
@@ -158,6 +195,8 @@ public class DialogueManager : MonoBehaviour
         isDialogueOpen = true;
         nextInputAllowedTime = Time.time + startInputDelay;
 
+        EnsureUI(); // auto-find the dialogue panel/text if they weren't wired in the Inspector
+
         Debug.Log("DIALOGUE OpenDialogue: lines=" + currentLines.Count
             + " | dialoguePanel=" + (dialoguePanel != null)
             + " | bodyText=" + (dialogueBodyText != null)
@@ -172,9 +211,29 @@ public class DialogueManager : MonoBehaviour
         if (lockMovementDuringDialogue && movementController != null)
             movementController.SetMovementLocked(true);
 
+        DialogueActive = true;
+        FreezePlayers(true);
+
         onDialogueOpened?.Invoke();
 
         ShowCurrentLine();
+    }
+
+    // Freeze/unfreeze the player(s) by toggling Mohammed's MovementController.
+    void FreezePlayers(bool freeze)
+    {
+        if (freeze)
+        {
+            frozenMovers = FindObjectsByType<MovementController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (MovementController m in frozenMovers)
+                if (m != null) m.enabled = false;
+        }
+        else if (frozenMovers != null)
+        {
+            foreach (MovementController m in frozenMovers)
+                if (m != null) m.enabled = true;
+            frozenMovers = null;
+        }
     }
 
     void ShowCurrentLine()
@@ -213,12 +272,16 @@ public class DialogueManager : MonoBehaviour
         if (lockMovementDuringDialogue && movementController != null)
             movementController.SetMovementLocked(false);
 
+        DialogueActive = false;
+        FreezePlayers(false);
+
         onDialogueClosed?.Invoke();
     }
 
     void CloseDialogueInstant()
     {
         isDialogueOpen = false;
+        DialogueActive = false;
 
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);

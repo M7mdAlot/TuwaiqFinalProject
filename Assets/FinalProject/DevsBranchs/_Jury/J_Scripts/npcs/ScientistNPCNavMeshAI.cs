@@ -84,6 +84,16 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         if (state == ScientistState.Dead) return;
         if (agent == null) return;
 
+        // Freeze in place while dialogue is playing so it isn't chaos.
+        if (DialogueManager.DialogueActive)
+        {
+            if (agent.isOnNavMesh) agent.isStopped = true;
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            return;
+        }
+
         FindThreat();
 
         switch (state)
