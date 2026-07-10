@@ -64,10 +64,21 @@ public class XEndingManager : MonoBehaviour
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
 
+        // Auto-find the DEATH panel by name if it wasn't wired (it lives in the persistent Canvas).
+        if (deathPanel == null) deathPanel = FindByName("DEATH");
+
         if (deathPanel != null)
             deathPanel.SetActive(true);
 
         Debug.Log("X DEATH PANEL");
+    }
+
+    GameObject FindByName(string targetName)
+    {
+        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Transform t in all)
+            if (t.name == targetName) return t.gameObject;
+        return null;
     }
 
     public void PlayGoodEnding()

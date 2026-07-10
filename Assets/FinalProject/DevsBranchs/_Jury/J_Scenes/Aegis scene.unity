@@ -1303,6 +1303,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.067270204, y: 0.30034554, z: 0.8358382}
   m_Center: {x: -0.3364595, y: -0.5102806, z: 0.3768238}
+--- !u!1 &228960029 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3676556854838428430, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+  m_PrefabInstance: {fileID: 306848835}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &236054752
 GameObject:
   m_ObjectHideFlags: 0
@@ -2397,7 +2402,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3676556854838428430, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 472407680}
   m_SourcePrefab: {fileID: 100100000, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
 --- !u!4 &330005481 stripped
 Transform:
@@ -3007,12 +3015,43 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3327467325048211531, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
   m_PrefabInstance: {fileID: 306848835}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 228960029}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9e308794944098409eb2a8fc1088977, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.WeaponHandler
+--- !u!114 &472407680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 228960029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a753d17ed70dcc44da7e145dd644039b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathToPanel
+  playerHealth: {fileID: 472407683}
+  aegisEnding: {fileID: 599868996}
+  xEnding: {fileID: 0}
+--- !u!114 &472407683 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6624011033495663890, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+  m_PrefabInstance: {fileID: 306848835}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 228960029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c75ca36baf4a494d97afae5d6c4b8d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.HealthSystem
+--- !u!1 &478122374 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3676556854838428430, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+  m_PrefabInstance: {fileID: 7552231857080257951}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &497924530 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2834978624731427556, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
@@ -4364,6 +4403,30 @@ MonoBehaviour:
   foldTime: 0.35
   visiblePosition: {x: 0, y: 0}
   hiddenOffset: {x: 0, y: 250}
+--- !u!114 &599868996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 599868994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df4da30cd891225499b5d9cd80eebb9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AegisEndingManager
+  deathPanel: {fileID: 0}
+  gameplayUIPanel: {fileID: 0}
+  pausePanel: {fileID: 0}
+  settingsPanel: {fileID: 0}
+  goodEndingCutsceneObject: {fileID: 0}
+  goodEndingVideo: {fileID: 0}
+  badEndingCutsceneObject: {fileID: 0}
+  badEndingVideo: {fileID: 0}
+  aegisPlayer: {fileID: 0}
+  movementController: {fileID: 0}
+  weaponController: {fileID: 0}
+  mainMenuSceneName: MAIN MENU
 --- !u!1001 &602177648
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5642,7 +5705,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3327467325048211531, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
   m_PrefabInstance: {fileID: 7552231857080257951}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 478122374}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9e308794944098409eb2a8fc1088977, type: 3}
@@ -6376,6 +6439,9 @@ MonoBehaviour:
   fireAutoParam: FireAuto
   maxHealth: 120
   destroyDelay: 4
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
   speedParam: Speed
   moveXParam: MoveX
   moveYParam: MoveY
@@ -10895,12 +10961,38 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6161825375936851941, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
   m_PrefabInstance: {fileID: 7552231857080257951}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 478122374}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
+--- !u!114 &1736601924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478122374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a753d17ed70dcc44da7e145dd644039b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathToPanel
+  playerHealth: {fileID: 1736601925}
+  aegisEnding: {fileID: 599868996}
+  xEnding: {fileID: 0}
+--- !u!114 &1736601925 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6624011033495663890, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+  m_PrefabInstance: {fileID: 7552231857080257951}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478122374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c75ca36baf4a494d97afae5d6c4b8d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.HealthSystem
 --- !u!1 &1746918997 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7171427314564549418, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
@@ -11452,6 +11544,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7802113161038617857, guid: 2c3f98bccb7531346bfe63222a5174b0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 599868995}
+    - targetCorrespondingSourceObject: {fileID: 7802113161038617857, guid: 2c3f98bccb7531346bfe63222a5174b0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 599868996}
   m_SourcePrefab: {fileID: 100100000, guid: 2c3f98bccb7531346bfe63222a5174b0, type: 3}
 --- !u!4 &1817271112 stripped
 Transform:
@@ -14211,7 +14306,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3676556854838428430, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1736601924}
   m_SourcePrefab: {fileID: 100100000, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

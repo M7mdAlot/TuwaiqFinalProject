@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 using Aegis.Core;
 
 // Turns an Aegis or X model into a HOSTILE NPC that hunts and kills the player.
@@ -43,6 +44,8 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     public float maxHealth = 120f;
     [Tooltip("Seconds to keep the corpse after death. 0 or less = stay forever.")]
     public float destroyDelay = 4f;
+    [Tooltip("Fires when this enemy dies — wire the bomb sequence (dialogue, timer, open door) here.")]
+    public UnityEvent onDeath;
 
     [Header("Animator params")]
     public string speedParam = "Speed";
@@ -117,10 +120,14 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
                 float engageRange = useRangedAttack ? rangedAttackRange : attackRange;
                 float leaveRange = engageRange * 1.3f;
 
+                // Ranged enemies need a clear line of sight — if a wall blocks it, chase to
+                // get around instead of standing there shooting through the wall.
+                bool clearShot = !useRangedAttack || HasLineOfSight();
+
                 if (state == RobotState.Attack)
-                    state = dist <= leaveRange ? RobotState.Attack : RobotState.Chase;
+                    state = (dist <= leaveRange && clearShot) ? RobotState.Attack : RobotState.Chase;
                 else
-                    state = dist <= engageRange ? RobotState.Attack : RobotState.Chase;
+                    state = (dist <= engageRange && clearShot) ? RobotState.Attack : RobotState.Chase;
             }
             else
             {
@@ -297,8 +304,32 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
         float maxReach = useRangedAttack ? rangedAttackRange + 2f : attackRange + 1f;
         if (Flat(transform.position, target.position) > maxReach) return;
 
+        // No damage through walls.
+        if (useRangedAttack && !HasLineOfSight()) return;
+
         IDamageable dmg = target.GetComponentInParent<IDamageable>();
         if (dmg != null && dmg.IsAlive) dmg.TakeDamage(damage);
+    }
+
+    // True if nothing solid is between the enemy's chest and the player.
+    bool HasLineOfSight()
+    {
+        if (target == null) return false;
+
+        Vector3 origin = transform.position + Vector3.up * 1.5f;
+        Vector3 targetPoint = target.position + Vector3.up * 1.2f;
+        Vector3 dir = targetPoint - origin;
+        float dist = dir.magnitude;
+        if (dist < 0.01f) return true;
+
+        if (Physics.Raycast(origin, dir.normalized, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
+        {
+            // Clear if the first thing hit is the player (or ourselves); blocked otherwise.
+            if (hit.transform == target || hit.transform.IsChildOf(target)) return true;
+            if (hit.transform == transform || hit.transform.IsChildOf(transform)) return true;
+            return false;
+        }
+        return true;
     }
 
     void FaceTarget()
@@ -370,6 +401,8 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
             c.enabled = false;
 
         Debug.Log("EnemyRobotAI '" + name + "' DIED.", this);
+
+        onDeath?.Invoke();   // wire the bomb sequence to this in the Inspector
 
         if (destroyDelay > 0f)
             Destroy(gameObject, destroyDelay);

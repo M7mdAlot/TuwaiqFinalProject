@@ -99,12 +99,10 @@ public class DialogueManager : MonoBehaviour
         if (interactAction != null && interactAction.WasPressedThisFrame())
             advance = true;
 
-        // Direct fallbacks so the line always advances (E / Space / left-click).
+        // Direct fallbacks so the line always advances. NOT left-click — that's Fire and
+        // would conflict (and could shoot while you're advancing dialogue).
         if (Keyboard.current != null &&
             (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame))
-            advance = true;
-
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             advance = true;
 
         if (advance)
