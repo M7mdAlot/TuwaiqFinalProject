@@ -277,7 +277,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 2ab93952a925f7d4caf96f6198e782ad, type: 2}
     - target: {fileID: 919132149155446097, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
       propertyPath: m_Name
-      value: Aegis 1
+      value: Aegis
       objectReference: {fileID: 0}
     - target: {fileID: 1630794972795428178, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -326,6 +326,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4600978759549781998}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4905804560910027851}
   m_SourcePrefab: {fileID: 100100000, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
 --- !u!1 &3676556854838428430 stripped
 GameObject:
@@ -580,6 +583,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 844da86bcbee8674aa3bc16a9743dd45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.PlayerController
+--- !u!114 &4905804560910027851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3676556854838428430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a753d17ed70dcc44da7e145dd644039b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathToPanel
+  playerHealth: {fileID: 6624011033495663890}
+  aegisEnding: {fileID: 0}
+  xEnding: {fileID: 0}
 --- !u!4 &4057198277666036148 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f93e30ec1c44c294796bcc0857cff79a, type: 3}
