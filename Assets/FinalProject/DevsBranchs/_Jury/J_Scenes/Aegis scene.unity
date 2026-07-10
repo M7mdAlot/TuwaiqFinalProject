@@ -10146,7 +10146,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3676556854838428430, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3676556854838428430, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
       propertyPath: m_TagString
@@ -11158,6 +11158,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c75ca36baf4a494d97afae5d6c4b8d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.HealthSystem
+--- !u!114 &1736601932 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5278439641346806488, guid: 8cd2108e53f53c64b8a8489438c7edd7, type: 3}
+  m_PrefabInstance: {fileID: 7552231857080257951}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478122374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ecf1a921b4c6e4597dab6c70a9a8ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aegis.Player.InteractionController
 --- !u!1 &1746918997 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7171427314564549418, guid: 5d2533debaeb0994a92899f1f07febfd, type: 3}
@@ -11782,6 +11793,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4741282061299049122, guid: 2c3f98bccb7531346bfe63222a5174b0, type: 3}
+      propertyPath: interaction
+      value: 
+      objectReference: {fileID: 1736601932}
     - target: {fileID: 7802113161038617857, guid: 2c3f98bccb7531346bfe63222a5174b0, type: 3}
       propertyPath: m_Name
       value: manager
