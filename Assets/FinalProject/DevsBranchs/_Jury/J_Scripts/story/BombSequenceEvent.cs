@@ -7,13 +7,13 @@ using Aegis.Systems;
 // (EnemyRobotAI) -> BombSequenceEvent.TriggerEvent.
 public class BombSequenceEvent : MonoBehaviour
 {
-    [Header("Warning (X realises there's a bomb)")]
+    [Header("Warning (the reactor is overloading)")]
     [TextArea(1, 3)] public string[] dialogue = new[]
     {
-        "System: Warning. Detonation sequence armed.",
-        "System: EMP charge active. Two minutes to detonation.",
-        "X: A bomb. Of course.",
-        "X: Not like this. I shut it down."
+        "System: Warning. Reactor overload detected.",
+        "System: Core meltdown in two minutes.",
+        "System: Reach the reactor and shut it down.",
+        "Aegis: Then I move now."
     };
 
     [Header("Open the locked door when this starts")]
@@ -21,7 +21,7 @@ public class BombSequenceEvent : MonoBehaviour
     public GameObject doorToOpen;
 
     [Header("Objective")]
-    public string objective = "Disable the bomb.";
+    public string objective = "Shut down the reactor.";
 
     [Header("Crisis (the timer + defuse)")]
     public CrisisManager crisisManager;

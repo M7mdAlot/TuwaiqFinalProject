@@ -16,6 +16,10 @@ GameObject:
   - component: {fileID: 5147612575536003823}
   - component: {fileID: -6763586478744782170}
   - component: {fileID: 1298357329845052466}
+  - component: {fileID: 7950451365798266540}
+  - component: {fileID: 3150873931052167279}
+  - component: {fileID: 4741282061299049122}
+  - component: {fileID: 8242988696206980781}
   m_Layer: 0
   m_Name: manager
   m_TagString: Untagged
@@ -53,6 +57,8 @@ MonoBehaviour:
   playerInput: {fileID: 0}
   uiController: {fileID: 0}
   pauseActionName: Pause
+  pausePanelName: Panel PAUSE
+  debugLogs: 1
 --- !u!114 &2519084489125650249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,3 +181,83 @@ MonoBehaviour:
   OnCrisisFailed:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7950451365798266540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df4da30cd891225499b5d9cd80eebb9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AegisEndingManager
+  deathPanel: {fileID: 0}
+  gameplayUIPanel: {fileID: 0}
+  pausePanel: {fileID: 0}
+  settingsPanel: {fileID: 0}
+  goodEndingCutsceneObject: {fileID: 0}
+  goodEndingVideo: {fileID: 0}
+  badEndingCutsceneObject: {fileID: 0}
+  badEndingVideo: {fileID: 0}
+  aegisPlayer: {fileID: 0}
+  movementController: {fileID: 0}
+  weaponController: {fileID: 0}
+  mainMenuSceneName: MAIN MENU
+--- !u!114 &3150873931052167279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b15d7f3923cd5d44d8cbf3344c07ec4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XEndingManager
+  deathPanel: {fileID: 0}
+  gameplayUIPanel: {fileID: 0}
+  pausePanel: {fileID: 0}
+  settingsPanel: {fileID: 0}
+  goodEndingCutsceneObject: {fileID: 0}
+  goodEndingVideo: {fileID: 0}
+  badEndingCutsceneObject: {fileID: 0}
+  badEndingVideo: {fileID: 0}
+  xPlayer: {fileID: 0}
+  movementController: {fileID: 0}
+  weaponController: {fileID: 0}
+  mainMenuSceneName: MAIN MENU
+--- !u!114 &4741282061299049122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62048e7f194f37343b8192cf62f4d92d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionUIBridge
+  interaction: {fileID: 0}
+  promptRoot: {fileID: 0}
+  promptText: {fileID: 0}
+  loadFill: {fileID: 0}
+--- !u!114 &8242988696206980781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7802113161038617857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c38ac70ad964bd4c8758894f0c281e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CrisisTimerUI
+  crisisManager: {fileID: 0}
+  timerPanel: {fileID: 0}
+  timerText: {fileID: 0}
+  fillImage: {fileID: 0}

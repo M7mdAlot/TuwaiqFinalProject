@@ -141,7 +141,7 @@ public class StorySequencer : MonoBehaviour
                 "Aegis: Never.",
                 "X: Good." } },
 
-            new Beat { label = "Bomb", objective = "Disable the bomb.", dialogue = new string[0] },
+            new Beat { label = "Reactor", objective = "Shut down the reactor.", dialogue = new string[0] },
         };
     }
 
@@ -203,7 +203,7 @@ public class StorySequencer : MonoBehaviour
                 "System: Threat probability rising.",
                 "X: Send him." } },
 
-            new Beat { label = "Bomb", objective = "Disable the EMP.", dialogue = new string[0] },
+            new Beat { label = "Reactor", objective = "Shut down the reactor.", dialogue = new string[0] },
         };
     }
 }

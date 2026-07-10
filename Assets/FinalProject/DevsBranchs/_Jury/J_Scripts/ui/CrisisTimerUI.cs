@@ -3,30 +3,28 @@ using UnityEngine.UI;
 using TMPro;
 using Aegis.Systems;
 
-// Shows the crisis (bomb / reactor) countdown on YOUR own HUD, reading Mohammed's
-// CrisisManager directly each frame. No dependency on his UIManager being wired.
-// Put this on a UI object and assign the CrisisManager + your timer panel/text/fill.
+// Shows the reactor/crisis countdown on your HUD, reading Mohammed's CrisisManager. Auto-finds
+// the CrisisManager and the timer panel/text/fill by name — just drop it on any UI object.
 public class CrisisTimerUI : MonoBehaviour
 {
-    [Header("Source")]
+    [Header("Optional — left empty, all are auto-found")]
     public CrisisManager crisisManager;
-
-    [Header("Your UI")]
-    [Tooltip("Panel shown only while the crisis is running.")]
-    public GameObject timerPanel;
-    [Tooltip("Countdown text, e.g. 00:45.")]
-    public TMP_Text timerText;
-    [Tooltip("Optional: an Image (Type = Filled) that drains full -> empty.")]
-    public Image fillImage;
-
-    void Start()
-    {
-        if (timerPanel != null) timerPanel.SetActive(false);
-    }
+    public GameObject timerPanel;   // auto-finds "TIMER BG"
+    public TMP_Text timerText;      // auto-finds "TIMER TEXT"
+    public Image fillImage;         // optional filled Image that drains
 
     void Update()
     {
+        if (crisisManager == null)
+            crisisManager = FindFirstObjectByType<CrisisManager>();
         if (crisisManager == null) return;
+
+        if (timerText == null)
+        {
+            GameObject go = FindByName("TIMER TEXT");
+            if (go != null) timerText = go.GetComponent<TMP_Text>();
+        }
+        if (timerPanel == null) timerPanel = FindByName("TIMER BG");
 
         bool active = crisisManager.HasTriggered && !crisisManager.IsResolved;
 
@@ -43,8 +41,14 @@ public class CrisisTimerUI : MonoBehaviour
             int s = Mathf.CeilToInt(remaining);
             timerText.text = (s / 60).ToString("00") + ":" + (s % 60).ToString("00");
         }
-
         if (fillImage != null)
             fillImage.fillAmount = duration > 0f ? remaining / duration : 0f;
+    }
+
+    GameObject FindByName(string n)
+    {
+        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Transform t in all) if (t.name == n) return t.gameObject;
+        return null;
     }
 }
