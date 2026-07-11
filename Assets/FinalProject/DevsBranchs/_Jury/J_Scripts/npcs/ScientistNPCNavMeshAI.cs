@@ -6,13 +6,7 @@ using Aegis.Core;
 [RequireComponent(typeof(NavMeshAgent))]
 public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 {
-    public enum ScientistState
-    {
-        Wander,
-        Flee,
-        Hide,
-        Dead
-    }
+    public enum ScientistState { Wander, Flee, Hide, Dead }
 
     [Header("References")]
     public NavMeshAgent agent;
@@ -48,6 +42,11 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     [Header("Health")]
     public float maxHealth = 40f;
 
+    [Header("Death")]
+    [Tooltip("Optional: exact death STATE name to force-play. Leave empty to rely on the IsDead bool.")]
+    public string deathAnimationStateName = "";
+    public float deathAnimationFadeTime = 0.05f;
+
     private ScientistState state = ScientistState.Wander;
     private Transform threat;
     private float wanderTimer;
@@ -59,32 +58,36 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 
     void Awake()
     {
-        if (agent == null)
-            agent = GetComponent<NavMeshAgent>();
-
-        if (animator == null)
-            animator = GetComponentInChildren<Animator>();
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
 
         CacheAnimatorParams();
-
         currentHealth = maxHealth;
 
-        if (animator != null)
-            animator.applyRootMotion = false;
+        if (animator != null) animator.applyRootMotion = false;
 
         if (agent != null)
         {
             agent.speed = wanderSpeed;
-            agent.isStopped = false;
+            if (agent.isOnNavMesh) agent.isStopped = false;
         }
     }
 
     void Update()
     {
         if (state == ScientistState.Dead) return;
-        if (agent == null) return;
+        if (agent == null || !agent.enabled) return;
 
-        // Freeze in place while dialogue is playing so it isn't chaos.
+        // Off the baked NavMesh -> can't pathfind. Stand still instead of spamming
+        // "Resume can only be called on an agent placed on a NavMesh" every frame.
+        if (!agent.isOnNavMesh)
+        {
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            return;
+        }
+
         if (DialogueManager.DialogueActive)
         {
             if (agent.isOnNavMesh) agent.isStopped = true;
@@ -98,17 +101,9 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 
         switch (state)
         {
-            case ScientistState.Wander:
-                HandleWander();
-                break;
-
-            case ScientistState.Flee:
-                HandleFlee();
-                break;
-
-            case ScientistState.Hide:
-                HandleHide();
-                break;
+            case ScientistState.Wander: HandleWander(); break;
+            case ScientistState.Flee: HandleFlee(); break;
+            case ScientistState.Hide: HandleHide(); break;
         }
 
         UpdateAnimator();
@@ -117,30 +112,21 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     void FindThreat()
     {
         Transform foundThreat = null;
-
         Collider[] hits = Physics.OverlapSphere(transform.position, visionRange, playerLayer);
 
         foreach (Collider hit in hits)
         {
             PlayerCharacterIdentity identity = hit.GetComponentInParent<PlayerCharacterIdentity>();
             if (identity == null) continue;
+            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X) continue;
 
-            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X)
-                continue;
-
-            if (CanSeeTarget(identity.transform))
-            {
-                foundThreat = identity.transform;
-                break;
-            }
+            if (CanSeeTarget(identity.transform)) { foundThreat = identity.transform; break; }
         }
 
         if (foundThreat != null)
         {
             threat = foundThreat;
-
-            if (state != ScientistState.Flee)
-                StartFlee();
+            if (state != ScientistState.Flee) StartFlee();
         }
     }
 
@@ -148,14 +134,10 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     {
         Vector3 toTarget = target.position - transform.position;
         toTarget.y = 0f;
-
-        if (toTarget.magnitude > visionRange)
-            return false;
+        if (toTarget.magnitude > visionRange) return false;
 
         float angle = Vector3.Angle(transform.forward, toTarget.normalized);
-
-        if (angle > fieldOfView * 0.5f)
-            return false;
+        if (angle > fieldOfView * 0.5f) return false;
 
         Vector3 eye = transform.position + Vector3.up * 1.5f;
         Vector3 targetPoint = target.position + Vector3.up * 1.2f;
@@ -164,10 +146,7 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         if (Physics.Raycast(eye, dir.normalized, out RaycastHit hit, visionRange, obstacleLayer, QueryTriggerInteraction.Ignore))
         {
             PlayerCharacterIdentity identity = hit.collider.GetComponentInParent<PlayerCharacterIdentity>();
-
-            if (identity == null)
-                return false;
-
+            if (identity == null) return false;
             return identity.playerType == PlayerCharacterIdentity.PlayerType.X;
         }
 
@@ -178,19 +157,13 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     {
         agent.isStopped = false;
         agent.speed = wanderSpeed;
-
         SetBool(isScaredParam, false);
         SetBool(isHidingParam, false);
 
         if (!agent.hasPath || agent.remainingDistance <= 0.6f)
         {
             wanderTimer += Time.deltaTime;
-
-            if (wanderTimer >= wanderWaitTime)
-            {
-                wanderTimer = 0f;
-                MoveToRandomPoint();
-            }
+            if (wanderTimer >= wanderWaitTime) { wanderTimer = 0f; MoveToRandomPoint(); }
         }
     }
 
@@ -198,71 +171,47 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     {
         state = ScientistState.Flee;
         fleeTimer = 0f;
-
         agent.isStopped = false;
         agent.speed = fleeSpeed;
-
         SetBool(isScaredParam, true);
         SetBool(isHidingParam, false);
-
         MoveAwayFromThreat();
     }
 
     void HandleFlee()
     {
-        if (threat == null)
-        {
-            state = ScientistState.Wander;
-            return;
-        }
+        if (threat == null) { state = ScientistState.Wander; return; }
 
         agent.isStopped = false;
         agent.speed = fleeSpeed;
-
         fleeTimer += Time.deltaTime;
 
-        if (!agent.hasPath || agent.remainingDistance <= 1f)
-            MoveAwayFromThreat();
-
-        if (fleeTimer >= hideAfterSeconds)
-            StartHide();
+        if (!agent.hasPath || agent.remainingDistance <= 1f) MoveAwayFromThreat();
+        if (fleeTimer >= hideAfterSeconds) StartHide();
     }
 
     void StartHide()
     {
         state = ScientistState.Hide;
-
         agent.ResetPath();
         agent.isStopped = true;
-
         SetBool(isScaredParam, true);
         SetBool(isHidingParam, true);
     }
 
     void HandleHide()
     {
-        if (threat == null)
-        {
-            ReturnToWander();
-            return;
-        }
+        if (threat == null) { ReturnToWander(); return; }
 
         float distance = Vector3.Distance(transform.position, threat.position);
-
-        if (distance > visionRange + 5f)
-        {
-            threat = null;
-            ReturnToWander();
-        }
+        if (distance > visionRange + 5f) { threat = null; ReturnToWander(); }
     }
 
     void ReturnToWander()
     {
         state = ScientistState.Wander;
-
         agent.isStopped = false;
         agent.speed = wanderSpeed;
-
         SetBool(isScaredParam, false);
         SetBool(isHidingParam, false);
     }
@@ -283,10 +232,7 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 
         Vector3 awayDirection = transform.position - threat.position;
         awayDirection.y = 0f;
-
-        if (awayDirection.sqrMagnitude < 0.01f)
-            awayDirection = -transform.forward;
-
+        if (awayDirection.sqrMagnitude < 0.01f) awayDirection = -transform.forward;
         awayDirection.Normalize();
 
         Vector3 fleeTarget = transform.position + awayDirection * fleeDistance;
@@ -315,8 +261,6 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         SetBool(isRunningParam, isRunning);
     }
 
-    // Bridge only: no numeric health exists yet for this NPC (it only flees on
-    // hit). Real health/death-on-damage is a separate feature decision.
     public bool IsAlive => state != ScientistState.Dead;
 
     void IDamageable.TakeDamage(float amount)
@@ -326,10 +270,8 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         currentHealth -= amount;
         SetTrigger(damageParam);
 
-        if (currentHealth <= 0f)
-            Die();          // dead: Update() bails and the agent is stopped -> frozen in place
-        else
-            StartFlee();    // still alive: run away
+        if (currentHealth <= 0f) Die();
+        else StartFlee();
 
         Debug.Log(name + " scientist took " + amount + " dmg. HP=" + currentHealth, this);
     }
@@ -342,49 +284,60 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
 
     public void Die()
     {
+        if (state == ScientistState.Dead) return; // never die twice
+
         state = ScientistState.Dead;
 
+        // Hard stop so the corpse can't keep sliding forward.
         if (agent != null)
         {
-            agent.ResetPath();
-            agent.isStopped = true;
+            if (agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+            agent.enabled = false; // detach completely — nothing moves the corpse now
         }
+        if (animator != null) animator.applyRootMotion = false;
 
+        SetFloat(speedParam, 0f);
+        SetFloat(moveXParam, 0f);
+        SetFloat(moveYParam, 0f);
         SetBool(isMovingParam, false);
         SetBool(isRunningParam, false);
         SetBool(isScaredParam, false);
         SetBool(isHidingParam, false);
         SetBool(isDeadParam, true);
+
+        // Force-play the death state (works even if the IsDead transition isn't wired up).
+        string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
+        if (animator != null) animator.CrossFadeInFixedTime(deathState, deathAnimationFadeTime, 0);
     }
 
     void CacheAnimatorParams()
     {
         if (animator == null) return;
-
         animatorParams.Clear();
-
         foreach (AnimatorControllerParameter param in animator.parameters)
             animatorParams[param.name] = param.type;
     }
 
     void SetFloat(string param, float value)
     {
-        if (animator == null) return;
-        if (!animatorParams.ContainsKey(param)) return;
+        if (animator == null || !animatorParams.ContainsKey(param)) return;
         animator.SetFloat(param, value);
     }
 
     void SetBool(string param, bool value)
     {
-        if (animator == null) return;
-        if (!animatorParams.ContainsKey(param)) return;
+        if (animator == null || !animatorParams.ContainsKey(param)) return;
         animator.SetBool(param, value);
     }
 
     void SetTrigger(string param)
     {
-        if (animator == null) return;
-        if (!animatorParams.ContainsKey(param)) return;
+        if (animator == null || !animatorParams.ContainsKey(param)) return;
         animator.SetTrigger(param);
     }
 }

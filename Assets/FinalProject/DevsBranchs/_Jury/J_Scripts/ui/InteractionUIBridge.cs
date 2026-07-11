@@ -17,6 +17,11 @@ public class InteractionUIBridge : MonoBehaviour
 
     void Start()
     {
+        GameObject found = FindPromptRoot();
+        Debug.Log("InteractionUIBridge: InteractionController found=" + (FindFirstObjectByType<InteractionController>() != null)
+            + ", prompt object found=" + (found != null ? "'" + found.name + "'" : "NONE")
+            + ", 'LOAD FILL' found=" + (FindByName("LOAD FILL") != null), this);
+
         if (promptRoot != null) promptRoot.SetActive(false);
     }
 
@@ -24,7 +29,7 @@ public class InteractionUIBridge : MonoBehaviour
     {
         if (interaction == null) interaction = FindFirstObjectByType<InteractionController>();
 
-        if (promptRoot == null) promptRoot = FindByName("press e to interact");
+        if (promptRoot == null) promptRoot = FindPromptRoot();
         if (promptText == null && promptRoot != null)
             promptText = promptRoot.GetComponentInChildren<TMP_Text>(true);
         if (loadFill == null)
@@ -50,6 +55,28 @@ public class InteractionUIBridge : MonoBehaviour
     {
         Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (Transform t in all) if (t.name == n) return t.gameObject;
+        return null;
+    }
+
+    // Flexible: exact name first, then anything named like a "press …" prompt, then anything
+    // containing "interact" (so it works even if the object isn't named exactly right).
+    GameObject FindPromptRoot()
+    {
+        GameObject g = FindByName("press e to interact");
+        if (g != null) return g;
+
+        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Transform t in all)
+        {
+            if (t.gameObject == gameObject) continue;
+            if (t.name.ToLowerInvariant().Contains("press")) return t.gameObject;
+        }
+        foreach (Transform t in all)
+        {
+            if (t.gameObject == gameObject) continue;
+            if (t.GetComponent<InteractionController>() != null) continue;
+            if (t.name.ToLowerInvariant().Contains("interact")) return t.gameObject;
+        }
         return null;
     }
 }

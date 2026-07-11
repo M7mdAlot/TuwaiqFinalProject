@@ -350,17 +350,24 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
         delta.y = 0f;
         float measured = delta.magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
 
-        // While chasing, force a forward RUN so it visibly sprints at the player (it always
-        // faces the player, so "forward" = toward you). Otherwise use measured movement.
+        // Only show the RUN when we are chasing AND actually translating this frame. If the
+        // robot is stuck (no NavMesh / boxed in against a wall) it stands idle instead of
+        // "moon-walking" in place. When it does move, force a clean forward run (it always
+        // faces the player, so "forward" = toward you).
         bool chasing = state == RobotState.Chase;
-        Vector3 local = chasing ? Vector3.forward : transform.InverseTransformDirection(delta.normalized);
-        float t = chasing ? 1f : Mathf.Clamp01(measured / Mathf.Max(chaseSpeed, 0.01f));
+        bool actuallyMoving = measured > 0.15f;
+        bool showRun = chasing && actuallyMoving;
 
-        SetFloat(speedParam, chasing ? chaseSpeed : measured);
+        Vector3 local = showRun
+            ? Vector3.forward
+            : (delta.sqrMagnitude > 0.0001f ? transform.InverseTransformDirection(delta.normalized) : Vector3.zero);
+        float t = showRun ? 1f : Mathf.Clamp01(measured / Mathf.Max(chaseSpeed, 0.01f));
+
+        SetFloat(speedParam, showRun ? chaseSpeed : measured);
         SetFloat(moveXParam, local.x * t);
         SetFloat(moveYParam, local.z * t);
-        SetBool(isMovingParam, chasing || measured > 0.1f);
-        SetBool(isRunningParam, chasing || measured > 0.1f);
+        SetBool(isMovingParam, actuallyMoving);
+        SetBool(isRunningParam, showRun);
 
         lastPos = transform.position;
     }
@@ -404,8 +411,7 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
 
         onDeath?.Invoke();   // wire the bomb sequence to this in the Inspector
 
-        if (destroyDelay > 0f)
-            Destroy(gameObject, destroyDelay);
+        // Corpse ALWAYS stays — never auto-destroyed (per your request: dead X-copies remain).
     }
 
     void SetFloat(string p, float v) { if (HasParam(p)) animator.SetFloat(p, v); }

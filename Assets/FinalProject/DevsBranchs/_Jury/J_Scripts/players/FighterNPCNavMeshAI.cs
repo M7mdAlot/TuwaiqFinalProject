@@ -5,15 +5,9 @@ using Aegis.Core;
 using Aegis.Player;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class FighterNPCNavMeshAI : MonoBehaviour
+public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
 {
-    public enum FighterState
-    {
-        Patrol,
-        Chase,
-        Attack,
-        Dead
-    }
+    public enum FighterState { Patrol, Chase, Attack, Dead }
 
     [Header("References")]
     public NavMeshAgent agent;
@@ -78,13 +72,17 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     [Header("Effects")]
     public GameObject bulletParticlePrefab;
 
+    [Header("Health (used only if there is NO HealthSystem on this NPC)")]
+    [Tooltip("Own hit points. Ignored when a Mohammed HealthSystem is present — that owns the HP instead.")]
+    public float maxHealth = 40f;
+    private float currentHealth;
+
     [Header("Death")]
-    [Tooltip("Optional: exact death animation STATE name to force-play (bypasses transition setup). " +
-             "Leave empty to rely only on the IsDead bool.")]
+    [Tooltip("Optional: exact death animation STATE name to force-play (bypasses transition setup). Leave empty to rely only on the IsDead bool.")]
     public string deathAnimationStateName = "";
     public float deathAnimationFadeTime = 0.05f;
-    [Tooltip("Destroy this NPC this many seconds after it dies. 0 = never.")]
-    public float destroyAfterDeath = 5f;
+    [Tooltip("Destroy this NPC this many seconds after it dies. 0 = never (stays as a corpse).")]
+    public float destroyAfterDeath = 0f;
 
     private FighterState state = FighterState.Patrol;
     private Transform target;
@@ -102,24 +100,25 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void Awake()
     {
-        if (agent == null)
-            agent = GetComponent<NavMeshAgent>();
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
 
-        if (animator == null)
-            animator = GetComponentInChildren<Animator>();
+        // Find Mohammed's HealthSystem wherever it sits (same object, a child, or a parent) so
+        // we always subscribe to its Died event — otherwise the soldier's HP can hit 0 with
+        // nothing handling the death, and it just stands there.
+        if (health == null) health = GetComponentInChildren<HealthSystem>(true);
+        if (health == null) health = GetComponentInParent<HealthSystem>();
 
-        if (health == null)
-            health = GetComponent<HealthSystem>();
+        currentHealth = maxHealth;
 
         CacheAnimatorParams();
 
-        if (animator != null)
-            animator.applyRootMotion = false;
+        if (animator != null) animator.applyRootMotion = false;
 
         if (agent != null)
         {
             agent.speed = patrolSpeed;
-            agent.isStopped = false;
+            if (agent.isOnNavMesh) agent.isStopped = false;
             agent.updateRotation = true;
             agent.updatePosition = true;
         }
@@ -145,6 +144,10 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("SOLDIER SETUP '" + name + "': maxHealth=" + maxHealth
+            + ", hasHealthSystem=" + (health != null)
+            + ", colliders=" + GetComponentsInChildren<Collider>().Length, this);
+
         if (forceWeaponAtStart)
         {
             SetBool(hasWeaponParam, true);
@@ -155,7 +158,18 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     void Update()
     {
         if (state == FighterState.Dead) return;
-        if (agent == null) return;
+        if (agent == null || !agent.enabled) return;
+
+        // Off the baked NavMesh -> can't pathfind. Stand still instead of spamming
+        // "Resume can only be called on an agent placed on a NavMesh" every frame.
+        if (!agent.isOnNavMesh)
+        {
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            SetBool(shootingBoolParam, false);
+            return;
+        }
 
         // Freeze in place while dialogue is playing so it isn't chaos.
         if (DialogueManager.DialogueActive)
@@ -168,24 +182,15 @@ public class FighterNPCNavMeshAI : MonoBehaviour
             return;
         }
 
-        if (animator != null)
-            animator.applyRootMotion = false;
+        if (animator != null) animator.applyRootMotion = false;
 
         FindTarget();
 
         switch (state)
         {
-            case FighterState.Patrol:
-                HandlePatrol();
-                break;
-
-            case FighterState.Chase:
-                HandleChase();
-                break;
-
-            case FighterState.Attack:
-                HandleAttack();
-                break;
+            case FighterState.Patrol: HandlePatrol(); break;
+            case FighterState.Chase: HandleChase(); break;
+            case FighterState.Attack: HandleAttack(); break;
         }
 
         UpdateAnimator();
@@ -198,21 +203,13 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (foundTarget != null)
         {
             target = foundTarget;
-
             float distance = Vector3.Distance(transform.position, target.position);
-
-            if (distance <= attackRange)
-                state = FighterState.Attack;
-            else
-                state = FighterState.Chase;
+            state = distance <= attackRange ? FighterState.Attack : FighterState.Chase;
         }
         else
         {
             target = null;
-
-            if (state != FighterState.Patrol)
-                state = FighterState.Patrol;
-
+            if (state != FighterState.Patrol) state = FighterState.Patrol;
             StopShootingAnimation();
         }
     }
@@ -228,24 +225,14 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         {
             PlayerCharacterIdentity identity = hit.GetComponentInParent<PlayerCharacterIdentity>();
             if (identity == null) continue;
-
-            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X)
-                continue;
-
-            if (!CanSeeTarget(identity.transform))
-                continue;
+            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X) continue;
+            if (!CanSeeTarget(identity.transform)) continue;
 
             float distance = Vector3.Distance(transform.position, identity.transform.position);
-
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestTarget = identity.transform;
-            }
+            if (distance < closestDistance) { closestDistance = distance; closestTarget = identity.transform; }
         }
 
-        if (closestTarget != null)
-            return closestTarget;
+        if (closestTarget != null) return closestTarget;
 
         PlayerCharacterIdentity[] allPlayers =
             FindObjectsByType<PlayerCharacterIdentity>(FindObjectsSortMode.None);
@@ -254,23 +241,13 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         {
             if (identity == null) continue;
             if (!identity.gameObject.activeInHierarchy) continue;
-
-            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X)
-                continue;
+            if (identity.playerType != PlayerCharacterIdentity.PlayerType.X) continue;
 
             float distance = Vector3.Distance(transform.position, identity.transform.position);
+            if (distance > visionRange) continue;
+            if (!CanSeeTarget(identity.transform)) continue;
 
-            if (distance > visionRange)
-                continue;
-
-            if (!CanSeeTarget(identity.transform))
-                continue;
-
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestTarget = identity.transform;
-            }
+            if (distance < closestDistance) { closestDistance = distance; closestTarget = identity.transform; }
         }
 
         return closestTarget;
@@ -280,16 +257,12 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     {
         Vector3 toTarget = targetTransform.position - transform.position;
         toTarget.y = 0f;
-
-        if (toTarget.magnitude > visionRange)
-            return false;
+        if (toTarget.magnitude > visionRange) return false;
 
         if (useFieldOfView)
         {
             float angle = Vector3.Angle(transform.forward, toTarget.normalized);
-
-            if (angle > fieldOfView * 0.5f)
-                return false;
+            if (angle > fieldOfView * 0.5f) return false;
         }
 
         if (requireLineOfSight)
@@ -301,10 +274,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
             if (Physics.Raycast(eye, dir.normalized, out RaycastHit hit, visionRange, obstacleLayer, QueryTriggerInteraction.Ignore))
             {
                 PlayerCharacterIdentity identity = hit.collider.GetComponentInParent<PlayerCharacterIdentity>();
-
-                if (identity == null)
-                    return false;
-
+                if (identity == null) return false;
                 return identity.playerType == PlayerCharacterIdentity.PlayerType.X;
             }
         }
@@ -315,21 +285,14 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     void HandlePatrol()
     {
         StopShootingAnimation();
-
         agent.isStopped = false;
         agent.speed = patrolSpeed;
-
         SetBool(isAimingParam, false);
 
         if (!agent.hasPath || agent.remainingDistance <= 0.6f)
         {
             patrolTimer += Time.deltaTime;
-
-            if (patrolTimer >= patrolWaitTime)
-            {
-                patrolTimer = 0f;
-                MoveToRandomPoint();
-            }
+            if (patrolTimer >= patrolWaitTime) { patrolTimer = 0f; MoveToRandomPoint(); }
         }
     }
 
@@ -337,39 +300,23 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     {
         StopShootingAnimation();
 
-        if (target == null)
-        {
-            state = FighterState.Patrol;
-            return;
-        }
+        if (target == null) { state = FighterState.Patrol; return; }
 
         agent.isStopped = false;
         agent.speed = chaseSpeed;
-
         SetBool(isAimingParam, false);
 
         float distance = Vector3.Distance(transform.position, target.position);
-
-        if (distance <= attackRange)
-        {
-            state = FighterState.Attack;
-            return;
-        }
+        if (distance <= attackRange) { state = FighterState.Attack; return; }
 
         agent.SetDestination(target.position);
     }
 
     void HandleAttack()
     {
-        if (target == null)
-        {
-            state = FighterState.Patrol;
-            StopShootingAnimation();
-            return;
-        }
+        if (target == null) { state = FighterState.Patrol; StopShootingAnimation(); return; }
 
         float distance = Vector3.Distance(transform.position, target.position);
-
         if (distance > attackRange + 2f)
         {
             agent.isStopped = false;
@@ -388,67 +335,45 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
         if (isReloading)
         {
-            if (IsReloadAnimationDone() || Time.time >= reloadEndTime)
-                isReloading = false;
-            else
-                return;
+            if (IsReloadAnimationDone() || Time.time >= reloadEndTime) isReloading = false;
+            else return;
         }
 
-        if (useAutoFire)
-            AutoFire();
-        else
-            SingleFire();
+        if (useAutoFire) AutoFire();
+        else SingleFire();
     }
 
     void AutoFire()
     {
-        if (!autoFirePlaying)
-            autoFireStartTime = Time.time;
+        if (!autoFirePlaying) autoFireStartTime = Time.time;
 
-        if (Time.time - autoFireStartTime >= continuousFireDuration)
-        {
-            StartReload();
-            return;
-        }
+        if (Time.time - autoFireStartTime >= continuousFireDuration) { StartReload(); return; }
 
         StartAutoShootAnimation();
 
         float bulletDelay = 1f / Mathf.Max(1f, bulletsPerSecond);
-
-        if (Time.time >= nextBulletTime)
-        {
-            nextBulletTime = Time.time + bulletDelay;
-            ShootBullet();
-        }
+        if (Time.time >= nextBulletTime) { nextBulletTime = Time.time + bulletDelay; ShootBullet(); }
     }
 
     void StartReload()
     {
         StopShootingAnimation();
-
         isReloading = true;
         hasEnteredReloadState = false;
         reloadEndTime = Time.time + reloadDuration;
-
         SetTrigger(reloadParam);
-
         Debug.Log(name + " reloading.");
     }
 
     bool IsReloadAnimationDone()
     {
-        if (animator == null || string.IsNullOrEmpty(reloadStateName))
-            return true;
+        if (animator == null || string.IsNullOrEmpty(reloadStateName)) return true;
 
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
         if (!hasEnteredReloadState)
         {
-            // Wait for the trigger to actually take effect before watching for it to end,
-            // otherwise we'd read the previous (still-active) state and think it's "done" instantly.
-            if (stateInfo.IsName(reloadStateName))
-                hasEnteredReloadState = true;
-
+            if (stateInfo.IsName(reloadStateName)) hasEnteredReloadState = true;
             return false;
         }
 
@@ -460,7 +385,6 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (Time.time >= nextBulletTime)
         {
             nextBulletTime = Time.time + 0.8f;
-
             SetBool(hasWeaponParam, true);
             SetTrigger(shootTriggerParam);
 
@@ -473,9 +397,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     void StartAutoShootAnimation()
     {
-        if (autoFirePlaying)
-            return;
-
+        if (autoFirePlaying) return;
         autoFirePlaying = true;
 
         SetBool(hasWeaponParam, true);
@@ -483,20 +405,11 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
         if (animator != null && forcePlayShootAnimation && !string.IsNullOrEmpty(autoShootAnimationStateName))
             animator.CrossFadeInFixedTime(autoShootAnimationStateName, shootAnimationFadeTime, 0);
-
-        Debug.Log(name + " auto fire animation started: " + autoShootAnimationStateName);
     }
 
     void StopShootingAnimation()
     {
         isReloading = false;
-
-        if (!autoFirePlaying)
-        {
-            SetBool(shootingBoolParam, false);
-            return;
-        }
-
         autoFirePlaying = false;
         SetBool(shootingBoolParam, false);
     }
@@ -505,10 +418,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour
     {
         if (target == null) return;
 
-        Vector3 origin = firePoint != null
-            ? firePoint.position
-            : transform.position + Vector3.up * 1.5f;
-
+        Vector3 origin = firePoint != null ? firePoint.position : transform.position + Vector3.up * 1.5f;
         Vector3 targetPosition = target.position + Vector3.up * 1.2f;
         Vector3 direction = (targetPosition - origin).normalized;
 
@@ -520,54 +430,34 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (Physics.Raycast(origin, direction, out RaycastHit hit, visionRange, ~0, QueryTriggerInteraction.Ignore))
         {
             PlayerCharacterIdentity identity = hit.collider.GetComponentInParent<PlayerCharacterIdentity>();
-
             if (identity != null && identity.playerType == PlayerCharacterIdentity.PlayerType.X)
             {
                 ApplyDamage(identity.transform);
                 damagedPlayer = true;
-
-                Debug.Log(name + " bullet hit X.");
             }
         }
 
         if (!damagedPlayer && damageTargetEvenIfRayMisses)
         {
             float distance = Vector3.Distance(transform.position, target.position);
-
-            if (distance <= attackRange + 1.5f)
-            {
-                ApplyDamage(target);
-                Debug.Log(name + " bullet damaged X directly.");
-            }
+            if (distance <= attackRange + 1.5f) ApplyDamage(target);
         }
     }
 
     void ApplyDamage(Transform targetTransform)
     {
         if (targetTransform == null) return;
-
-        targetTransform.SendMessageUpwards(
-            "TakeDamage",
-            damage,
-            SendMessageOptions.DontRequireReceiver
-        );
+        targetTransform.SendMessageUpwards("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
     }
 
     void FaceTarget()
     {
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
-
-        if (direction.sqrMagnitude < 0.01f)
-            return;
+        if (direction.sqrMagnitude < 0.01f) return;
 
         Quaternion targetRotation = Quaternion.LookRotation(direction);
-
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            Time.deltaTime * rotationSpeed
-        );
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
     }
 
     void MoveToRandomPoint()
@@ -600,17 +490,30 @@ public class FighterNPCNavMeshAI : MonoBehaviour
 
     public bool IsAlive => state != FighterState.Dead;
 
-    // Health + death now come from Mohammed's HealthSystem on this NPC (auto-linked in Awake):
-    // it owns the HP and raises DamageTaken (play the hit reaction) and Died (play the death anim).
+    // Bullets call this (IDamageable). Pure internal HP — the exact same reliable pattern the
+    // scientist uses. We do NOT defer to a HealthSystem here (that was the flaky part). If a
+    // HealthSystem is ALSO present and the bullet hits IT, OnHealthDied still routes to Die().
+    void IDamageable.TakeDamage(float amount)
+    {
+        if (state == FighterState.Dead) return;
+
+        currentHealth -= amount;
+        Debug.Log("SOLDIER '" + name + "' hit for " + amount + ". HP now " + currentHealth, this);
+
+        if (currentHealth <= 0f) Die();
+        else TakeHit();
+    }
+
     private void OnHealthDamaged(float amount)
     {
         if (state == FighterState.Dead) return;
-        if (health != null && !health.IsAlive) return; // the fatal hit -> skip the flinch, go straight to death
+        if (health != null && !health.IsAlive) return; // fatal hit -> skip the flinch, go straight to death
         TakeHit();
     }
 
     private void OnHealthDied()
     {
+        Debug.Log("SOLDIER '" + name + "' HealthSystem reported DEATH -> dying.", this);
         Die();
     }
 
@@ -624,65 +527,66 @@ public class FighterNPCNavMeshAI : MonoBehaviour
         if (state == FighterState.Dead) return; // never die twice
 
         state = FighterState.Dead;
+        Debug.Log("SOLDIER '" + name + "' DIED -> playing death.", this);
 
+        // Hard stop so the corpse can't keep sliding or shooting.
         if (agent != null)
         {
-            agent.ResetPath();
-            agent.isStopped = true;
+            if (agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+            agent.enabled = false; // detach completely — nothing moves the corpse now
         }
+        if (animator != null) animator.applyRootMotion = false;
 
+        SetFloat(speedParam, 0f);
+        SetFloat(moveXParam, 0f);
+        SetFloat(moveYParam, 0f);
         SetBool(isMovingParam, false);
         SetBool(isRunningParam, false);
         SetBool(isAimingParam, false);
         SetBool(shootingBoolParam, false);
         SetBool(isDeadParam, true);
 
-        // Force-play the death state so it works even if the IsDead transition isn't wired up.
-        if (animator != null && !string.IsNullOrEmpty(deathAnimationStateName))
-            animator.CrossFadeInFixedTime(deathAnimationStateName, deathAnimationFadeTime, 0);
+        // Force-play the death state (works even if the IsDead transition isn't wired up).
+        string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
+        if (animator != null) animator.CrossFadeInFixedTime(deathState, deathAnimationFadeTime, 0);
 
-        // Disappear after a delay.
-        if (destroyAfterDeath > 0f)
-            Destroy(gameObject, destroyAfterDeath);
+        // Corpse ALWAYS stays on the ground — never auto-destroyed (per your request: bodies remain).
     }
 
     void CacheAnimatorParams()
     {
         if (animator == null) return;
-
         animatorParams.Clear();
-
         foreach (AnimatorControllerParameter param in animator.parameters)
             animatorParams[param.name] = param.type;
     }
 
     void SetFloat(string param, float value)
     {
-        if (animator == null) return;
-        if (string.IsNullOrEmpty(param)) return;
+        if (animator == null || string.IsNullOrEmpty(param)) return;
         if (!animatorParams.ContainsKey(param)) return;
         if (animatorParams[param] != AnimatorControllerParameterType.Float) return;
-
         animator.SetFloat(param, value);
     }
 
     void SetBool(string param, bool value)
     {
-        if (animator == null) return;
-        if (string.IsNullOrEmpty(param)) return;
+        if (animator == null || string.IsNullOrEmpty(param)) return;
         if (!animatorParams.ContainsKey(param)) return;
         if (animatorParams[param] != AnimatorControllerParameterType.Bool) return;
-
         animator.SetBool(param, value);
     }
 
     void SetTrigger(string param)
     {
-        if (animator == null) return;
-        if (string.IsNullOrEmpty(param)) return;
+        if (animator == null || string.IsNullOrEmpty(param)) return;
         if (!animatorParams.ContainsKey(param)) return;
         if (animatorParams[param] != AnimatorControllerParameterType.Trigger) return;
-
         animator.SetTrigger(param);
     }
 }

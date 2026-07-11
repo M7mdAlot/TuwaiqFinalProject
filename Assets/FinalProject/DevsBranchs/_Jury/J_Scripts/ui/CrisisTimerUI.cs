@@ -13,6 +13,13 @@ public class CrisisTimerUI : MonoBehaviour
     public TMP_Text timerText;      // auto-finds "TIMER TEXT"
     public Image fillImage;         // optional filled Image that drains
 
+    void Start()
+    {
+        Debug.Log("CrisisTimerUI: CrisisManager found=" + (FindFirstObjectByType<CrisisManager>() != null)
+            + ", 'TIMER BG' found=" + (FindByName("TIMER BG") != null)
+            + ", 'TIMER TEXT' found=" + (FindByName("TIMER TEXT") != null), this);
+    }
+
     void Update()
     {
         if (crisisManager == null)

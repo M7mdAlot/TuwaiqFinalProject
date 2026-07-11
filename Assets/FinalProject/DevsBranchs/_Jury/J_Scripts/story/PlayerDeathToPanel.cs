@@ -17,7 +17,19 @@ public class PlayerDeathToPanel : MonoBehaviour
     {
         if (playerHealth == null) playerHealth = GetComponent<HealthSystem>();
         if (playerHealth == null) playerHealth = GetComponentInParent<HealthSystem>();
+
+        // Prefer the actual player — enemies now carry HealthSystem too, so a blind
+        // FindFirstObjectByType could grab a soldier's health by mistake.
+        if (playerHealth == null)
+        {
+            GameObject tagged = GameObject.FindWithTag("Player");
+            if (tagged != null) playerHealth = tagged.GetComponentInChildren<HealthSystem>();
+        }
         if (playerHealth == null) playerHealth = FindFirstObjectByType<HealthSystem>();
+
+        Debug.Log("PlayerDeathToPanel: watching health on '" +
+                  (playerHealth != null ? playerHealth.gameObject.name : "NULL") +
+                  "'. aegisEnding=" + (aegisEnding != null) + " xEnding=" + (xEnding != null), this);
     }
 
     void OnEnable()
@@ -32,8 +44,24 @@ public class PlayerDeathToPanel : MonoBehaviour
 
     void OnPlayerDied()
     {
-        if (xEnding != null) xEnding.ShowDeathPanel();
-        else if (aegisEnding != null) aegisEnding.ShowDeathPanel();
-        else Debug.LogWarning("PlayerDeathToPanel: no ending manager assigned.", this);
+        Debug.Log("PlayerDeathToPanel: PLAYER DIED -> routing to ending panel.", this);
+
+        bool hasX = xEnding != null;
+        bool hasAegis = aegisEnding != null;
+
+        // Only one assigned (the normal case) -> use it, no guessing needed.
+        if (hasX && !hasAegis) { xEnding.ShowDeathPanel(); return; }
+        if (hasAegis && !hasX) { aegisEnding.ShowDeathPanel(); return; }
+
+        // Both assigned -> pick by the active scene. "X scene" -> X, anything else -> Aegis.
+        if (hasX && hasAegis)
+        {
+            string scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
+            if (scene.StartsWith("x")) xEnding.ShowDeathPanel();
+            else aegisEnding.ShowDeathPanel();
+            return;
+        }
+
+        Debug.LogWarning("PlayerDeathToPanel: no ending manager assigned.", this);
     }
 }

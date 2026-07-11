@@ -32,18 +32,13 @@ public class PlayerEnterTrigger : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("TRIGGER: something entered -> " + other.name, this);
-
         if (onlyOnce && used) return;
 
         bool isPlayer = other.GetComponentInParent<PlayerCharacterIdentity>() != null
                         || other.CompareTag("Player");
 
-        if (!isPlayer)
-        {
-            Debug.Log("TRIGGER: '" + other.name + "' is NOT the player, ignored.", this);
-            return;
-        }
+        // Ignore bullets and everything else SILENTLY — no console spam.
+        if (!isPlayer) return;
 
         // Gate: don't fire (and don't consume the trigger) until the prerequisite beat played.
         if (requireBeatAtLeast >= 0 && requireSequencer != null
