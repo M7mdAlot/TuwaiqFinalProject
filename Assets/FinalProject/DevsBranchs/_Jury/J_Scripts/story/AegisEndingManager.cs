@@ -43,6 +43,9 @@ public class AegisEndingManager : MonoBehaviour
 
         if (badEndingCutsceneObject != null)
             badEndingCutsceneObject.SetActive(false);
+
+        Debug.Log("AegisEndingManager SETUP: deathPanel=" + (deathPanel != null ? deathPanel.name : "NULL(auto-find)")
+            + ", goodVideo=" + (goodEndingVideo != null) + ", badVideo=" + (badEndingVideo != null), this);
     }
 
     public void ShowDeathPanel()
@@ -65,12 +68,13 @@ public class AegisEndingManager : MonoBehaviour
             settingsPanel.SetActive(false);
 
         // Auto-find the DEATH panel by name if it wasn't wired (it lives in the persistent Canvas).
-        if (deathPanel == null) deathPanel = FindByName("DEATH");
+        if (deathPanel == null) deathPanel = FindDeathPanel();
 
-        if (deathPanel != null)
-            deathPanel.SetActive(true);
+        if (deathPanel != null) deathPanel.SetActive(true);
+        else Debug.LogError("AEGIS DEATH PANEL: no death panel assigned AND none found by name. " +
+                            "Assign the Death Panel field, or name the panel object 'DEATH'.", this);
 
-        Debug.Log("AEGIS DEATH PANEL");
+        Debug.Log("AEGIS DEATH PANEL -> panel=" + (deathPanel != null ? deathPanel.name : "NULL"), this);
     }
 
     GameObject FindByName(string targetName)
@@ -78,6 +82,17 @@ public class AegisEndingManager : MonoBehaviour
         Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (Transform t in all)
             if (t.name == targetName) return t.gameObject;
+        return null;
+    }
+
+    // Exact "DEATH" first, then any object whose name contains "death" (case-insensitive).
+    GameObject FindDeathPanel()
+    {
+        GameObject g = FindByName("DEATH");
+        if (g != null) return g;
+        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Transform t in all)
+            if (t.name.ToLowerInvariant().Contains("death")) return t.gameObject;
         return null;
     }
 

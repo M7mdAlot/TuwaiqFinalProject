@@ -27,6 +27,9 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
     public bool requireLineOfSight = false;
 
     [Header("Movement")]
+    [Tooltip("ON = the soldier NEVER moves. It holds its exact placed spot, turns to face the " +
+             "player, and shoots — a stationary guard 'waiting for you'.")]
+    public bool holdPosition = false;
     public float patrolSpeed = 2.5f;
     public float chaseSpeed = 4.5f;
     public float patrolRadius = 10f;
@@ -95,6 +98,12 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
     private float reloadEndTime;
     private bool hasEnteredReloadState;
 
+    // After death we pin the body to this exact spot/rotation every frame so no leftover
+    // animation motion (or a stray root motion) can make the corpse drift or spin.
+    private bool deadPinned;
+    private Vector3 deathPos;
+    private Quaternion deathRot;
+
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
 
@@ -160,17 +169,6 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         if (state == FighterState.Dead) return;
         if (agent == null || !agent.enabled) return;
 
-        // Off the baked NavMesh -> can't pathfind. Stand still instead of spamming
-        // "Resume can only be called on an agent placed on a NavMesh" every frame.
-        if (!agent.isOnNavMesh)
-        {
-            SetFloat(speedParam, 0f);
-            SetBool(isMovingParam, false);
-            SetBool(isRunningParam, false);
-            SetBool(shootingBoolParam, false);
-            return;
-        }
-
         // Freeze in place while dialogue is playing so it isn't chaos.
         if (DialogueManager.DialogueActive)
         {
@@ -185,6 +183,36 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         if (animator != null) animator.applyRootMotion = false;
 
         FindTarget();
+
+        // Hold Position (stationary guard) OR off the baked NavMesh -> can't chase, but the
+        // soldier can still stand, face the player, and SHOOT (shooting is a raycast).
+        if (holdPosition || !agent.isOnNavMesh)
+        {
+            if (agent.isOnNavMesh) agent.isStopped = true; // pin it exactly where it was placed
+
+            if (target != null)
+            {
+                FaceTarget();
+                SetBool(isAimingParam, true);
+                SetBool(hasWeaponParam, true);
+
+                if (isReloading)
+                {
+                    if (IsReloadAnimationDone() || Time.time >= reloadEndTime) isReloading = false;
+                }
+                else if (useAutoFire) AutoFire();
+                else SingleFire();
+            }
+            else
+            {
+                StopShootingAnimation();
+            }
+
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            return;
+        }
 
         switch (state)
         {
@@ -529,6 +557,11 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         state = FighterState.Dead;
         Debug.Log("SOLDIER '" + name + "' DIED -> playing death.", this);
 
+        // Remember exactly where/how it died so LateUpdate can pin it there forever.
+        deathPos = transform.position;
+        deathRot = transform.rotation;
+        deadPinned = true;
+
         // Hard stop so the corpse can't keep sliding or shooting.
         if (agent != null)
         {
@@ -556,6 +589,25 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         if (animator != null) animator.CrossFadeInFixedTime(deathState, deathAnimationFadeTime, 0);
 
         // Corpse ALWAYS stays on the ground — never auto-destroyed (per your request: bodies remain).
+    }
+
+    void LateUpdate()
+    {
+        // Runs AFTER the Animator writes the transform, so it beats any motion baked into the
+        // death clip: the dead soldier is frozen exactly where it fell — no drift, no spin.
+        if (!deadPinned) return;
+
+        transform.position = deathPos;
+        transform.rotation = deathRot;
+
+        // Never let it leave the death state (some controllers transition death -> idle/walk,
+        // which made the "dead" body get up and move). If it left, snap back to the death pose.
+        if (animator != null && !animator.IsInTransition(0))
+        {
+            string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName(deathState))
+                animator.Play(deathState, 0, 1f);
+        }
     }
 
     void CacheAnimatorParams()

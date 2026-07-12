@@ -43,6 +43,9 @@ public class XEndingManager : MonoBehaviour
 
         if (badEndingCutsceneObject != null)
             badEndingCutsceneObject.SetActive(false);
+
+        Debug.Log("XEndingManager SETUP: deathPanel=" + (deathPanel != null ? deathPanel.name : "NULL(auto-find)")
+            + ", goodVideo=" + (goodEndingVideo != null) + ", badVideo=" + (badEndingVideo != null), this);
     }
 
     public void ShowDeathPanel()

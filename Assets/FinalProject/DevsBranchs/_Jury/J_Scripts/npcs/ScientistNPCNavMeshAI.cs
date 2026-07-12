@@ -53,6 +53,12 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     private float fleeTimer;
     private float currentHealth;
 
+    // After death we pin the body to this exact spot/rotation every frame so no leftover
+    // animation motion (or a stray root motion) can make the corpse drift or spin.
+    private bool deadPinned;
+    private Vector3 deathPos;
+    private Quaternion deathRot;
+
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
 
@@ -287,6 +293,12 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         if (state == ScientistState.Dead) return; // never die twice
 
         state = ScientistState.Dead;
+        Debug.Log("SCIENTIST '" + name + "' DIED -> pinned in place (won't move now).", this);
+
+        // Remember exactly where/how it died so LateUpdate can pin it there forever.
+        deathPos = transform.position;
+        deathRot = transform.rotation;
+        deadPinned = true;
 
         // Hard stop so the corpse can't keep sliding forward.
         if (agent != null)
@@ -313,6 +325,26 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         // Force-play the death state (works even if the IsDead transition isn't wired up).
         string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
         if (animator != null) animator.CrossFadeInFixedTime(deathState, deathAnimationFadeTime, 0);
+    }
+
+    void LateUpdate()
+    {
+        // Runs AFTER the Animator writes the transform, so it beats any motion baked into the
+        // death clip: the dead scientist is frozen exactly where it fell — no drift, no spin.
+        if (!deadPinned) return;
+
+        transform.position = deathPos;
+        transform.rotation = deathRot;
+
+        // Never let it leave the death state (some controllers transition death -> idle/walk,
+        // which is what made the "dead" body get up and move). If it left, snap back to the
+        // end of the death clip (lying pose) and stay there.
+        if (animator != null && !animator.IsInTransition(0))
+        {
+            string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName(deathState))
+                animator.Play(deathState, 0, 1f);
+        }
     }
 
     void CacheAnimatorParams()
