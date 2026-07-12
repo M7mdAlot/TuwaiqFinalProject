@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Events;
 using Aegis.Core;
+using Aegis.Player;
 
 // Turns an Aegis or X model into a HOSTILE NPC that hunts and kills the player.
 // - Aegis campaign: put on the corrupted X-copies (Target = Aegis).
@@ -66,12 +67,19 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
     private bool warnedNoTarget;
     private bool hasAggro;
 
+    // If this enemy also has a Mohammed HealthSystem (e.g. it was copied from the player prefab),
+    // that component EATS the bullet damage instead of our own TakeDamage — so we listen to its
+    // Died event and route it to our Die(). That way the enemy dies no matter which one is hit.
+    private HealthSystem _health;
+
     public bool IsAlive => state != RobotState.Dead;
 
     void Awake()
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+
+        if (_health == null) _health = GetComponent<HealthSystem>();
 
         currentHealth = maxHealth;
         lastPos = transform.position;
@@ -84,6 +92,22 @@ public class EnemyRobotAI : MonoBehaviour, IDamageable
             agent.stoppingDistance = attackRange * 0.8f;
             agent.updateRotation = false; // we rotate manually so it always faces the player
         }
+    }
+
+    void OnEnable()
+    {
+        if (_health != null) _health.Died += OnHealthDied;
+    }
+
+    void OnDisable()
+    {
+        if (_health != null) _health.Died -= OnHealthDied;
+    }
+
+    private void OnHealthDied()
+    {
+        Debug.Log("EnemyRobotAI '" + name + "' HealthSystem reported death -> dying.", this);
+        Die();
     }
 
     void Update()

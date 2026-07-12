@@ -112,13 +112,18 @@ public class AegisEndingManager : MonoBehaviour
         if (deathPanel != null)
             deathPanel.SetActive(false);
 
-        if (goodEndingCutsceneObject != null)
-            goodEndingCutsceneObject.SetActive(true);
+        ForceShow(goodEndingCutsceneObject);
 
         if (goodEndingVideo != null)
+        {
+            ForceShow(goodEndingVideo.gameObject);
             goodEndingVideo.Play();
+        }
 
-        Debug.Log("AEGIS GOOD ENDING VIDEO");
+        Debug.Log("AEGIS GOOD ENDING -> cutscene=" + (goodEndingCutsceneObject != null) +
+                  ", video=" + (goodEndingVideo != null) +
+                  (goodEndingCutsceneObject == null && goodEndingVideo == null
+                      ? "  <-- NOTHING ASSIGNED! Assign Good Ending Cutscene Object / Video." : ""), this);
     }
 
     public void PlayBadEnding()
@@ -137,13 +142,36 @@ public class AegisEndingManager : MonoBehaviour
         if (deathPanel != null)
             deathPanel.SetActive(false);
 
-        if (badEndingCutsceneObject != null)
-            badEndingCutsceneObject.SetActive(true);
+        ForceShow(badEndingCutsceneObject);
 
         if (badEndingVideo != null)
+        {
+            ForceShow(badEndingVideo.gameObject);
             badEndingVideo.Play();
+        }
 
-        Debug.Log("AEGIS BAD ENDING VIDEO");
+        Debug.Log("AEGIS BAD ENDING -> cutscene=" + (badEndingCutsceneObject != null) +
+                  ", video=" + (badEndingVideo != null) +
+                  (badEndingCutsceneObject == null && badEndingVideo == null
+                      ? "  <-- NOTHING ASSIGNED! Assign Bad Ending Cutscene Object / Video." : ""), this);
+    }
+
+    // Activate the object + every parent so an inactive parent can't hide it, and put it on top.
+    void ForceShow(GameObject go)
+    {
+        if (go == null) return;
+        for (Transform t = go.transform; t != null; t = t.parent)
+            t.gameObject.SetActive(true);
+        go.transform.SetAsLastSibling();
+
+        UnityEngine.UI.Graphic g = go.GetComponent<UnityEngine.UI.Graphic>();
+        if (g != null)
+        {
+            Canvas c = go.GetComponent<Canvas>();
+            if (c == null) c = go.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder = 31000;
+        }
     }
 
     void DisablePlayerControl()

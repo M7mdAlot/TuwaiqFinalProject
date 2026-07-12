@@ -18,6 +18,11 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     public LayerMask playerLayer = ~0;
     public LayerMask obstacleLayer = ~0;
 
+    [Header("Behaviour")]
+    [Tooltip("ON = the scientist never wanders or flees — it stays exactly where you placed it " +
+             "(a frozen/cowering civilian). It still dies when shot.")]
+    public bool holdPosition = false;
+
     [Header("Wandering")]
     public float wanderRadius = 8f;
     public float wanderWaitTime = 2f;
@@ -58,6 +63,7 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
     private bool deadPinned;
     private Vector3 deathPos;
     private Quaternion deathRot;
+    private string _deathState;   // the real death-state name found in the controller
 
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
@@ -88,6 +94,16 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         // "Resume can only be called on an agent placed on a NavMesh" every frame.
         if (!agent.isOnNavMesh)
         {
+            SetFloat(speedParam, 0f);
+            SetBool(isMovingParam, false);
+            SetBool(isRunningParam, false);
+            return;
+        }
+
+        // Stationary civilian: never wander or flee — hold the exact placed spot.
+        if (holdPosition)
+        {
+            if (agent.isOnNavMesh) agent.isStopped = true;
             SetFloat(speedParam, 0f);
             SetBool(isMovingParam, false);
             SetBool(isRunningParam, false);
@@ -322,9 +338,33 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         SetBool(isHidingParam, false);
         SetBool(isDeadParam, true);
 
-        // Force-play the death state (works even if the IsDead transition isn't wired up).
-        string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
-        if (animator != null) animator.CrossFadeInFixedTime(deathState, deathAnimationFadeTime, 0);
+        // Force-play the death state. We look up the REAL state name in the controller so it
+        // works whether it's "death", "Death", "Die", etc.
+        _deathState = ResolveDeathState();
+        if (animator != null && !string.IsNullOrEmpty(_deathState))
+        {
+            animator.CrossFadeInFixedTime(_deathState, deathAnimationFadeTime, 0);
+            Debug.Log("SCIENTIST '" + name + "' playing death state '" + _deathState + "'.", this);
+        }
+        else
+        {
+            Debug.LogWarning("SCIENTIST '" + name + "': NO death state found in the animator. " +
+                "Type your death state's exact name into 'Death Animation State Name'.", this);
+        }
+    }
+
+    // Finds the death state's real name in the controller (tries your field first, then common names).
+    string ResolveDeathState()
+    {
+        if (animator == null) return null;
+        string[] candidates = { deathAnimationStateName, "death", "Death", "DEATH",
+                                "Die", "die", "Dying", "dying", "Dead", "dead" };
+        foreach (string s in candidates)
+        {
+            if (string.IsNullOrEmpty(s)) continue;
+            if (animator.HasState(0, Animator.StringToHash(s))) return s;
+        }
+        return null;
     }
 
     void LateUpdate()
@@ -339,11 +379,10 @@ public class ScientistNPCNavMeshAI : MonoBehaviour, IDamageable
         // Never let it leave the death state (some controllers transition death -> idle/walk,
         // which is what made the "dead" body get up and move). If it left, snap back to the
         // end of the death clip (lying pose) and stay there.
-        if (animator != null && !animator.IsInTransition(0))
+        if (animator != null && !string.IsNullOrEmpty(_deathState) && !animator.IsInTransition(0))
         {
-            string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
-            if (!animator.GetCurrentAnimatorStateInfo(0).IsName(deathState))
-                animator.Play(deathState, 0, 1f);
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName(_deathState))
+                animator.Play(_deathState, 0, 1f);
         }
     }
 

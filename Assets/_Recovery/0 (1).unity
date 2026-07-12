@@ -2298,10 +2298,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3669262932063282300, guid: 89da0ca27b6d6b849b49d102e34858eb, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4083322038646982267, guid: 89da0ca27b6d6b849b49d102e34858eb, type: 3}
       propertyPath: m_Name
       value: Canvas MENUS
@@ -2309,10 +2305,6 @@ PrefabInstance:
     - target: {fileID: 4083322038646982267, guid: 89da0ca27b6d6b849b49d102e34858eb, type: 3}
       propertyPath: m_IsActive
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5329796387746153681, guid: 89da0ca27b6d6b849b49d102e34858eb, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6093106705804470927, guid: 89da0ca27b6d6b849b49d102e34858eb, type: 3}
       propertyPath: m_IsActive

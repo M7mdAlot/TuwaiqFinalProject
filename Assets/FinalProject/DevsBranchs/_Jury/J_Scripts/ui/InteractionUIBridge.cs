@@ -47,7 +47,18 @@ public class InteractionUIBridge : MonoBehaviour
         if (has)
         {
             if (promptText != null) promptText.text = target.Prompt;
-            if (loadFill != null) loadFill.fillAmount = interaction.HoldProgress01;
+
+            if (loadFill != null)
+            {
+                // Show + drive the fill bar while looking at a hold-style device.
+                if (!loadFill.gameObject.activeSelf) loadFill.gameObject.SetActive(true);
+                loadFill.type = Image.Type.Filled;          // ensure fillAmount actually shows
+                loadFill.fillAmount = interaction.HoldProgress01;
+            }
+        }
+        else if (loadFill != null)
+        {
+            loadFill.fillAmount = 0f;
         }
     }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Aegis.Systems;
 
 // The whole post-boss bomb sequence in one call: a warning/monologue, opens the locked door,
@@ -27,19 +28,52 @@ public class BombSequenceEvent : MonoBehaviour
     public CrisisManager crisisManager;
     public float delayBeforeCrisis = 0.8f;
 
+    [Header("TEST: press this key to start the bomb NOW (turn OFF for the build)")]
+    public bool enableTestKey = true;
+    public Key testKey = Key.B;
+
     private bool started;
+
+    void Update()
+    {
+        if (enableTestKey && Keyboard.current != null && Keyboard.current[testKey].wasPressedThisFrame)
+        {
+            Debug.Log("BombSequenceEvent: TEST KEY -> starting the bomb.", this);
+            TriggerEvent();
+        }
+    }
 
     // Wire the boss's On Death event to this.
     public void TriggerEvent()
     {
         if (started) return;
         started = true;
+
+        // Always resolve a CrisisManager, even if the Inspector reference is empty/broken.
+        if (crisisManager == null) crisisManager = FindFirstObjectByType<CrisisManager>();
+
+        Debug.Log("BombSequenceEvent: TriggerEvent -> crisisManager=" +
+                  (crisisManager != null ? crisisManager.name : "NULL"), this);
+
+        // START THE TIMER IMMEDIATELY so it's guaranteed to show — the dialogue/door/objective
+        // then play alongside it. (Previously it waited for you to click through the dialogue.)
+        if (crisisManager != null)
+        {
+            Debug.Log("BombSequenceEvent: calling CrisisManager.TriggerCrisis() -> timer should appear NOW.", this);
+            crisisManager.TriggerCrisis();
+        }
+        else
+        {
+            Debug.LogError("BombSequenceEvent: no CrisisManager found in the scene — the timer can't " +
+                           "start. Add/enable a CrisisManager, or assign the Crisis Manager field.", this);
+        }
+
         StartCoroutine(Sequence());
     }
 
     IEnumerator Sequence()
     {
-        // 1) Warning dialogue / X monologue.
+        // Warning dialogue / X monologue (plays while the timer is already counting down).
         if (dialogue != null && dialogue.Length > 0 && DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogueLines(dialogue);
@@ -48,16 +82,13 @@ public class BombSequenceEvent : MonoBehaviour
                 yield return null;
         }
 
-        // 2) Open the locked door.
+        // Open the locked door.
         if (doorToOpen != null) doorToOpen.SetActive(false);
 
-        // 3) Objective.
+        // Objective.
         ShowObjective(objective);
 
-        yield return new WaitForSeconds(delayBeforeCrisis);
-
-        // 4) Start the 2-minute countdown (set the CrisisManager's Duration to 120).
-        if (crisisManager != null) crisisManager.TriggerCrisis();
+        yield return null;
     }
 
     void ShowObjective(string text)

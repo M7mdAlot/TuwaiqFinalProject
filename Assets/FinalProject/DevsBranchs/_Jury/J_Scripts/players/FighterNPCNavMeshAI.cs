@@ -103,6 +103,7 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
     private bool deadPinned;
     private Vector3 deathPos;
     private Quaternion deathRot;
+    private string _deathState;   // the real death-state name found in the controller
 
     private Dictionary<string, AnimatorControllerParameterType> animatorParams =
         new Dictionary<string, AnimatorControllerParameterType>();
@@ -584,11 +585,35 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
         SetBool(shootingBoolParam, false);
         SetBool(isDeadParam, true);
 
-        // Force-play the death state (works even if the IsDead transition isn't wired up).
-        string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
-        if (animator != null) animator.CrossFadeInFixedTime(deathState, deathAnimationFadeTime, 0);
+        // Force-play the death state. Look up the REAL state name so it works whether the
+        // controller calls it "death", "Death", "Die", etc.
+        _deathState = ResolveDeathState();
+        if (animator != null && !string.IsNullOrEmpty(_deathState))
+        {
+            animator.CrossFadeInFixedTime(_deathState, deathAnimationFadeTime, 0);
+            Debug.Log("SOLDIER '" + name + "' playing death state '" + _deathState + "'.", this);
+        }
+        else
+        {
+            Debug.LogWarning("SOLDIER '" + name + "': NO death state found in the animator. " +
+                "Type your death state's exact name into 'Death Animation State Name'.", this);
+        }
 
         // Corpse ALWAYS stays on the ground — never auto-destroyed (per your request: bodies remain).
+    }
+
+    // Finds the death state's real name in the controller (tries your field first, then common names).
+    string ResolveDeathState()
+    {
+        if (animator == null) return null;
+        string[] candidates = { deathAnimationStateName, "death", "Death", "DEATH",
+                                "Die", "die", "Dying", "dying", "Dead", "dead" };
+        foreach (string s in candidates)
+        {
+            if (string.IsNullOrEmpty(s)) continue;
+            if (animator.HasState(0, Animator.StringToHash(s))) return s;
+        }
+        return null;
     }
 
     void LateUpdate()
@@ -602,11 +627,10 @@ public class FighterNPCNavMeshAI : MonoBehaviour, IDamageable
 
         // Never let it leave the death state (some controllers transition death -> idle/walk,
         // which made the "dead" body get up and move). If it left, snap back to the death pose.
-        if (animator != null && !animator.IsInTransition(0))
+        if (animator != null && !string.IsNullOrEmpty(_deathState) && !animator.IsInTransition(0))
         {
-            string deathState = string.IsNullOrEmpty(deathAnimationStateName) ? "death" : deathAnimationStateName;
-            if (!animator.GetCurrentAnimatorStateInfo(0).IsName(deathState))
-                animator.Play(deathState, 0, 1f);
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName(_deathState))
+                animator.Play(_deathState, 0, 1f);
         }
     }
 
