@@ -4,56 +4,53 @@ using TMPro;
 using UnityEngine.InputSystem;
 using Aegis.Systems;
 
-// Bulletproof "hold F to shut down the device" — completely bypasses Mohammed's
-// InteractionController. Put it on the PLAYER. It raycasts from the camera, works on TRIGGER
-// or SOLID colliders, shows the prompt, fills the LOAD bar, and calls InteractableDevice.Interact()
-// when you hold F long enough.
+// Dead-simple, AIM-FREE "hold F near the device to shut it down". Put it on the PLAYER.
+// No raycast, no aiming: it finds the NEAREST InteractableDevice within range, shows the prompt,
+// fills the LOAD bar, defuses on hold, and fires the good ending directly.
 //
-// NOTE: if you use this, DISABLE the InteractionUIBridge component so the two don't fight over
-// the prompt (this one drives the same UI by name).
+// If you use this, DISABLE the InteractionUIBridge component so they don't fight over the prompt.
 public class SimpleDeviceInteractor : MonoBehaviour
 {
-    [Header("Aim")]
-    [Tooltip("Left empty = uses the main camera automatically.")]
-    public Camera cam;
-    public float range = 5f;
+    [Header("Just walk within this distance and hold the key")]
+    public float range = 4f;
     public Key useKey = Key.F;
 
     [Header("UI (auto-found by name)")]
-    public GameObject promptRoot;   // the "press F to interact" object
+    public GameObject promptRoot;
     public TMP_Text promptText;
-    public Image loadFill;          // "LOAD FILL" (forced to Filled type)
+    public Image loadFill;
 
     private float _hold;
+    private InteractableDevice _defused; // the device we personally shut down — never re-open it
+
+    void Start()
+    {
+        int devices = FindObjectsByType<InteractableDevice>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
+        Debug.Log("SimpleDeviceInteractor: RUNNING on '" + name + "'. InteractableDevices in scene = " +
+                  devices + ". Walk within " + range + "m of one and HOLD " + useKey + ".", this);
+    }
 
     void Update()
     {
-        // Prefer THIS player's own camera, then the tagged main camera, then any camera.
-        if (cam == null) cam = GetComponentInChildren<Camera>();
-        if (cam == null) cam = Camera.main;
-        if (cam == null) cam = FindFirstObjectByType<Camera>();
-        if (cam == null) return;
+        InteractableDevice device = NearestDevice(out float dist);
 
-        // Raycast from the camera. QueryTriggerInteraction.Collide = hits triggers too (forgiving).
-        InteractableDevice device = null;
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward,
-                             out RaycastHit hit, range, ~0, QueryTriggerInteraction.Collide))
-            device = hit.collider.GetComponentInParent<InteractableDevice>();
+        // Force it usable so the crisis on/off gating can never block you — but NEVER re-open the
+        // device we just defused. Forcing it back on every frame raced CrisisManager's own check
+        // for CanInteract==false, so if CrisisManager didn't happen to poll in that exact frame,
+        // it never saw the device as defused and the countdown never stopped.
+        if (device != null && !device.CanInteract && device != _defused) device.SetEnabled(true);
 
-        // Force it usable so the crisis on/off gating can never block you.
-        if (device != null && !device.CanInteract) device.SetEnabled(true);
+        bool near = device != null;
 
-        bool canUse = device != null;
-
-        // Hook up the UI (auto-find once).
+        // Hook up the UI (auto-find).
         if (promptRoot == null) promptRoot = FindByNameContains("press");
         if (promptText == null && promptRoot != null) promptText = promptRoot.GetComponentInChildren<TMP_Text>(true);
         if (loadFill == null) { GameObject g = FindByName("LOAD FILL"); if (g != null) loadFill = g.GetComponent<Image>(); }
 
-        if (promptRoot != null && promptRoot.activeSelf != canUse) promptRoot.SetActive(canUse);
-        if (canUse && promptText != null) promptText.text = device.Prompt;
+        if (promptRoot != null && promptRoot.activeSelf != near) promptRoot.SetActive(near);
+        if (near && promptText != null) promptText.text = device.Prompt;
 
-        if (canUse && Keyboard.current != null && Keyboard.current[useKey].isPressed)
+        if (near && Keyboard.current != null && Keyboard.current[useKey].isPressed)
         {
             _hold += Time.deltaTime;
             float p = device.HoldDuration > 0f ? Mathf.Clamp01(_hold / device.HoldDuration) : 1f;
@@ -61,10 +58,11 @@ public class SimpleDeviceInteractor : MonoBehaviour
 
             if (_hold >= device.HoldDuration)
             {
-                Debug.Log("SimpleDeviceInteractor: HELD F -> shutting down '" + device.name + "'.", this);
-                device.Interact(gameObject);   // flips CanInteract=false -> CrisisManager sees success
+                Debug.Log("SimpleDeviceInteractor: DONE -> shut down '" + device.name + "'.", this);
+                device.Interact(gameObject);
+                _defused = device;
 
-                // Directly fire the good ending too, so it works even if no crisis events are wired.
+                // Fire the good ending directly, so it works even if no crisis events are wired.
                 CrisisEndingLink link = FindFirstObjectByType<CrisisEndingLink>();
                 if (link != null) link.ForceGoodEnding();
 
@@ -75,8 +73,21 @@ public class SimpleDeviceInteractor : MonoBehaviour
         else
         {
             _hold = 0f;
-            if (!canUse && loadFill != null) loadFill.fillAmount = 0f;
+            if (!near && loadFill != null) loadFill.fillAmount = 0f;
         }
+    }
+
+    InteractableDevice NearestDevice(out float bestDist)
+    {
+        InteractableDevice best = null;
+        bestDist = range;
+        foreach (InteractableDevice d in FindObjectsByType<InteractableDevice>(FindObjectsSortMode.None))
+        {
+            if (d == null) continue;
+            float dist = Vector3.Distance(transform.position, d.transform.position);
+            if (dist <= bestDist) { bestDist = dist; best = d; }
+        }
+        return best;
     }
 
     GameObject FindByName(string n)

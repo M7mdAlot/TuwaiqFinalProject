@@ -7,6 +7,12 @@ using Aegis.Core;
 // Drives YOUR interaction UI (the "press e to interact" prompt + LOAD bar) from Mohammed's
 // InteractionController — so your own HUD shows instead of his on-screen debug overlay.
 // Auto-finds everything by name; just drop it on a UI object. (Disable his InteractionDebugHud.)
+//
+// Also self-heals: Mohammed's InteractionController raycasts with QueryTriggerInteraction.Ignore
+// and its _rayOrigin often isn't wired to the camera, so it can silently miss devices (e.g. the
+// EMP bomb) no matter how you aim. The first time we find the player, we attach a
+// SimpleDeviceInteractor to it (the aim-free "walk within range and hold F" interactor already
+// proven on the Aegis reactor) and hand this bridge's UI job off to it, so devices always work.
 public class InteractionUIBridge : MonoBehaviour
 {
     [Header("Optional — all auto-found by name")]
@@ -14,6 +20,8 @@ public class InteractionUIBridge : MonoBehaviour
     public GameObject promptRoot;   // auto-finds "press e to interact"
     public TMP_Text promptText;
     public Image loadFill;          // auto-finds "LOAD FILL" (Image Type = Filled)
+
+    private bool _autoUpgraded;
 
     void Start()
     {
@@ -28,6 +36,23 @@ public class InteractionUIBridge : MonoBehaviour
     void Update()
     {
         if (interaction == null) interaction = FindFirstObjectByType<InteractionController>();
+
+        if (!_autoUpgraded && interaction != null)
+        {
+            _autoUpgraded = true;
+
+            if (interaction.GetComponent<SimpleDeviceInteractor>() == null)
+            {
+                interaction.gameObject.AddComponent<SimpleDeviceInteractor>();
+                Debug.Log("InteractionUIBridge: added SimpleDeviceInteractor to '" + interaction.name +
+                          "' automatically (aim-free hold-to-interact), so devices work even when " +
+                          "Mohammed's raycast misses them.", this);
+            }
+
+            // Hand the same prompt/LOAD FILL UI off entirely so the two don't fight over it.
+            enabled = false;
+            return;
+        }
 
         if (promptRoot == null) promptRoot = FindPromptRoot();
         if (promptText == null && promptRoot != null)

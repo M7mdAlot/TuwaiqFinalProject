@@ -6,6 +6,12 @@ using Aegis.Systems;
 // Shows the reactor/crisis countdown. Watches whichever CrisisManager is actually TRIGGERED
 // (so duplicate managers don't break it), and FORCES the timer panel visible + on top when the
 // crisis is running (so it can't be buried behind another canvas). Auto-finds everything by name.
+//
+// Also self-heals: if nothing in the scene is listening for the crisis outcome (e.g. the
+// CrisisManager's OnCrisisSucceeded/OnCrisisFailed Inspector wiring is missing or was broken by a
+// prefab edit), the ending would never play even after the timer hits 0. So the first time we run,
+// we make sure a CrisisEndingLink exists — it independently polls the crisis result and fires the
+// good/bad ending as a safety net (harmless if the Inspector wiring already does this).
 public class CrisisTimerUI : MonoBehaviour
 {
     [Header("Optional — left empty, all are auto-found")]
@@ -15,6 +21,7 @@ public class CrisisTimerUI : MonoBehaviour
     public Image fillImage;         // optional filled Image that drains
 
     private bool _forced;
+    private bool _linked;
 
     void Start()
     {
@@ -25,6 +32,18 @@ public class CrisisTimerUI : MonoBehaviour
 
     void Update()
     {
+        if (!_linked)
+        {
+            _linked = true;
+            if (FindFirstObjectByType<CrisisEndingLink>() == null)
+            {
+                gameObject.AddComponent<CrisisEndingLink>();
+                Debug.Log("CrisisTimerUI: no CrisisEndingLink in the scene -> added one automatically " +
+                          "as a safety net, so the good/bad ending fires from the crisis outcome even " +
+                          "if the CrisisManager's Inspector event wiring is missing or broken.", this);
+            }
+        }
+
         // Find the manager that is actually counting down (handles more than one CrisisManager).
         CrisisManager active = FindTriggeredManager();
 
